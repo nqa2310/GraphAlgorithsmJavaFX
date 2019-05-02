@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+   <children>
+      <StackPane fx:id="stackRoot" prefHeight="783.0" prefWidth="1264.0">
+         <children>
+            <AnchorPane fx:id="anchorRoot" prefHeight="944.0" prefWidth="1627.0">
+               <children>
+                  <Group fx:id="canvasGroup" layoutX="297.0" onMouseClicked="#handle" onMouseDragged="#handle" onMousePressed="#handle" onMouseReleased="#handle">
+                     <children>
+                        <Pane fx:id="viewer" layoutX="-6.0" onMouseClicked="#handle" onMouseDragged="#handle" onMousePressed="#handle" onMouseReleased="#handle" prefHeight="778.0" prefWidth="978.0" style="-fx-background-color: #E0E0E0;" />
+                     </children>
+                     <cursor>
+                        <Cursor fx:constant="CROSSHAIR" />
+                     </cursor>
+                  </Group>
+                  <AnchorPane prefHeight="783.0" prefWidth="288.0" style="-fx-background-color: #3b5999;">
+                     <children>
+                        <VBox alignment="CENTER_LEFT" layoutX="16.0" layoutY="447.0" prefHeight="180.0" prefWidth="258.0">
+                           <children>
+                              <JFXToggleButton fx:id="addVertexButton" onAction="#AddVertexHandle" scaleX="1.3" scaleY="1.3" scaleZ="1.3" text="Add Vertex" textFill="WHITE" />
+                              <JFXToggleButton id="addEdgeButton" fx:id="addEdgeButton" onAction="#AddEdgeHandle" scaleX="1.3" scaleY="1.3" scaleZ="1.3" text="Add Edge" textFill="#f8f7f7" />
+                           </children>
+                           <opaqueInsets>
+                              <Insets />
+                           </opaqueInsets>
+                           <padding>
+                              <Insets left="50.0" />
+                           </padding>
+                        </VBox>
+                        <HBox alignment="CENTER" layoutX="26.0" layoutY="627.0" prefHeight="129.0" prefWidth="239.0">
+                           <children>
+                              <JFXButton fx:id="clearButton" buttonType="RAISED" onAction="#ClearHandle" prefHeight="46.0" prefWidth="105.0" style="-fx-background-color: #21759b;" text="CLEAR" textFill="WHITE">
+                                 <cursor>
+                                    <Cursor fx:constant="HAND" />
+                                 </cursor>
+                                 <HBox.margin>
+                                    <Insets right="10.0" />
+                                 </HBox.margin>
+                              </JFXButton>
+                              <JFXButton fx:id="resetButton" buttonType="RAISED" onAction="#ResetHandle" prefHeight="46.0" prefWidth="105.0" style="-fx-background-color: #21759b;" text="RESET" textFill="WHITE">
+                                 <cursor>
+                                    <Cursor fx:constant="HAND" />
+                                 </cursor>
+                                 <HBox.margin>
+                                    <Insets left="10.0" />
+                                 </HBox.margin>
+                              </JFXButton>
+                           </children>
+                        </HBox>
+                        <GridPane alignment="CENTER" layoutX="17.0" layoutY="127.0" prefHeight="298.0" prefWidth="239.0">
+                           <children>
+                              <Label alignment="CENTER" text="Algorithms" textFill="WHITE" GridPane.halignment="CENTER">
+                                 <font>
+                                    <Font size="33.0" />
+                                 </font>
+                                 <GridPane.margin>
+                                    <Insets />
+                                 </GridPane.margin>
+                              </Label>
+                              <JFXToggleButton id="bfsButton" fx:id="bfsButton" scaleX="1.3" scaleY="1.3" scaleZ="1.3" text="BFS" textFill="WHITE" toggleColor="#ff5722" toggleLineColor="#ffab91" unToggleColor="#546e7a" unToggleLineColor="#90a4ae" GridPane.rowIndex="1">
+                                 <opaqueInsets>
+                                    <Insets />
+                                 </opaqueInsets>
+                                 <GridPane.margin>
+                                    <Insets left="60.0" />
+                                 </GridPane.margin>
+                              </JFXToggleButton>
+                              <JFXToggleButton id="dfsButton" fx:id="dfsButton" scaleX="1.3" scaleY="1.3" scaleZ="1.3" text="DFS" textFill="WHITE" toggleColor="#ff5722" toggleLineColor="#ffab91" unToggleColor="#546e7a" unToggleLineColor="#90a4ae" GridPane.rowIndex="2">
+                                 <GridPane.margin>
+                                    <Insets left="60.0" />
+                                 </GridPane.margin>
+                              </JFXToggleButton>
+                              <JFXToggleButton fx:id="dijkstraButton" scaleX="1.3" scaleY="1.3" scaleZ="1.3" text="Dijkstra" textFill="WHITE" toggleColor="#ff5722" toggleLineColor="#ffab91" unToggleColor="#546e7a" unToggleLineColor="#90a4ae" GridPane.rowIndex="3">
+                                 <opaqueInsets>
+                                    <Insets />
+                                 </opaqueInsets>
+                                 <GridPane.margin>
+                                    <Insets left="63.0" />
+                                 </GridPane.margin>
+                              </JFXToggleButton>
+                           </children>
+                           <columnConstraints>
+                              <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                           </columnConstraints>
+                           <rowConstraints>
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="SOMETIMES" />
+                              <RowConstraints maxHeight="77.0" minHeight="10.0" prefHeight="77.0" valignment="CENTER" vgrow="SOMETIMES" />
+                              <RowConstraints maxHeight="73.0" minHeight="10.0" prefHeight="72.0" valignment="CENTER" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="SOMETIMES" />
+                           </rowConstraints>
+                        </GridPane>
+                        <HBox alignment="CENTER" layoutX="7.0" layoutY="14.0" prefHeight="100.0" prefWidth="258.0">
+                           <children>
+                              <JFXButton buttonType="RAISED" contentDisplay="GRAPHIC_ONLY" style="-fx-background-radius: 100;" text="Button">
+                                 <cursor>
+                                    <Cursor fx:constant="HAND" />
+                                 </cursor>
+                                 <graphic>
+                                    <ImageView fitHeight="52.0" fitWidth="85.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@fast_forward_black_48x48%20-%20Copy.png" />
+                                       </image>
+                                    </ImageView>
+                                 </graphic>
+                                 <tooltip>
+                                    <Tooltip text="Empty Tooltip" />
+                                 </tooltip>
+                                 <HBox.margin>
+                                    <Insets right="10.0" />
+                                 </HBox.margin>
+                              </JFXButton>
+                              <JFXButton buttonType="RAISED" contentDisplay="GRAPHIC_ONLY" style="-fx-background-radius: 100;" text="Button">
+                                 <cursor>
+                                    <Cursor fx:constant="HAND" />
+                                 </cursor>
+                                 <graphic>
+                                    <ImageView fitHeight="52.0" fitWidth="85.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@pause_black_48x48.png" />
+                                       </image>
+                                    </ImageView>
+                                 </graphic>
+                                 <tooltip>
+                                    <Tooltip text="Empty Tooltip" />
+                                 </tooltip>
+                                 <HBox.margin>
+                                    <Insets left="10.0" right="10.0" />
+                                 </HBox.margin>
+                              </JFXButton>
+                              <JFXButton buttonType="RAISED" contentDisplay="GRAPHIC_ONLY" style="-fx-background-radius: 100;">
+                                 <cursor>
+                                    <Cursor fx:constant="HAND" />
+                                 </cursor>
+                                 <graphic>
+                                    <ImageView fitHeight="52.0" fitWidth="85.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@fast_forward_black_48x48.png" />
+                                       </image>
+                                    </ImageView>
+                                 </graphic>
+                                 <tooltip>
+                                    <Tooltip text="Empty Tooltip" />
+                                 </tooltip>
+                                 <HBox.margin>
+                                    <Insets left="10.0" />
+                                 </HBox.margin>
+                              </JFXButton>
+                           </children>
+                           <opaqueInsets>
+                              <Insets />
+                           </opaqueInsets>
+                        </HBox>
+                     </children>
+                  </AnchorPane>
+               </children>
+            </AnchorPane>
+         </children>
+      </StackPane>
+   </children>
+</AnchorPane>
