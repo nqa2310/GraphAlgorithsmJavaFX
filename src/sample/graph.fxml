@@ -120,14 +120,14 @@
                                     <Insets right="10.0" />
                                  </HBox.margin>
                               </JFXButton>
-                              <JFXButton buttonType="RAISED" contentDisplay="GRAPHIC_ONLY" style="-fx-background-radius: 100;" text="Button">
+                              <JFXButton fx:id="playPauseButton" buttonType="RAISED" contentDisplay="GRAPHIC_ONLY" onAction="#PlayPauseHandle" style="-fx-background-radius: 100;" text="Button">
                                  <cursor>
                                     <Cursor fx:constant="HAND" />
                                  </cursor>
                                  <graphic>
-                                    <ImageView fitHeight="52.0" fitWidth="85.0" pickOnBounds="true" preserveRatio="true">
+                                    <ImageView fx:id="playPauseImage" fitHeight="52.0" fitWidth="85.0" pickOnBounds="true" preserveRatio="true">
                                        <image>
-                                          <Image url="@pause_black_48x48.png" />
+                                          <Image url="@play_arrow_black_48x48.png" />
                                        </image>
                                     </ImageView>
                                  </graphic>

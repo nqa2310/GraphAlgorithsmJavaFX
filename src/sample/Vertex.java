@@ -15,15 +15,19 @@ public class Vertex implements Comparable<Vertex>{
     public int visitTime = 0, lowTime = 0;
     public int DAGColor;
 
+    public Vertex() {
+
+    }
+
     public Vertex(String name) {
-        name = name;
-        visited = false;
+        this.name = name;
+        this.visited = false;
     }
 
     public Vertex(String name, Controller.VertexFX c) {
-        name = name;
-        circle = c;
-        visited = false;
+        this.name = name;
+        this.circle = c;
+        this.visited = false;
     }
 
     @Override

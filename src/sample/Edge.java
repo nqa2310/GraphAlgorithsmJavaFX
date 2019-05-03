@@ -16,14 +16,14 @@ public class Edge {
     public Edge(Vertex source, Vertex target) {
         this.source = source;
         this.target = target;
-        weight = 0;
+        this.weight = 0;
     }
 
-//    public Edge(Node argSource, Node argTarget, double argWeight, Shape argline, Label weiLabel) {
-//        source = argSource;
-//        target = argTarget;
-//        weight = argWeight;
-//        line = argline;
-//        this.weightLabel = weiLabel;
-//    }
+    public Edge(Vertex source, Vertex target, double weight, Shape line, Label weiLabel) {
+        this.source = source;
+        this.target = target;
+        this.weight = weight;
+        this.line = line;
+        this.weightLabel = weiLabel;
+    }
 }

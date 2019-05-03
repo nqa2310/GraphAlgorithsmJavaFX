@@ -1,19 +1,20 @@
 package sample;
 
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXNodesList;
-import com.jfoenix.controls.JFXSlider;
-import com.jfoenix.controls.JFXToggleButton;
+import com.jfoenix.controls.*;
 import javafx.animation.*;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.control.*;
 import javafx.scene.control.Label;
 import javafx.scene.effect.BlendMode;
+import javafx.scene.effect.Bloom;
+import javafx.scene.effect.BoxBlur;
+import javafx.scene.effect.Effect;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
@@ -29,10 +30,8 @@ import javafx.util.Duration;
 
 import java.awt.*;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
-import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
 
@@ -75,7 +74,7 @@ public class Controller implements Initializable {
     @FXML
     private JFXSlider slider = new JFXSlider();
     @FXML
-    private ImageView playPauseImage, openHidden;
+    private ImageView playPauseImage;
 
     int nVertex = 0;
     int time = 500;
@@ -90,6 +89,10 @@ public class Controller implements Initializable {
             calculated = false, playing = false, paused = false, pinned = false;
 
     private boolean weighted = false, unweighted = true,bfs = true, dfs = true, dijkstra = true;
+
+    Algorithm algo = new Algorithm();
+
+    public SequentialTransition st;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -113,6 +116,8 @@ public class Controller implements Initializable {
         if (unweighted) {
             dijkstraButton.setDisable(true);
         }
+        Image image = new Image(getClass().getResourceAsStream("play_arrow_black_48x48.png"));
+        playPauseImage.setImage(image);
 
 //        if (directed) {
 //            articulationPointButton.setDisable(true);
@@ -289,7 +294,6 @@ public class Controller implements Initializable {
         public void handle(MouseEvent mouseEvent) {
             VertexFX circle = (VertexFX) mouseEvent.getSource();
             if (mouseEvent.getEventType() == MouseEvent.MOUSE_PRESSED && mouseEvent.getButton() == MouseButton.PRIMARY) {
-
                 if (!circle.isSelected) {
                     if (selectedVertex != null) {
                         if (addEdge && !edgeExists(selectedVertex, circle)) {
@@ -328,11 +332,11 @@ public class Controller implements Initializable {
 //                                    mstEdges.add(temp);
 //                                }
 //
-//                                selectedNode.node.adjacents.add(new Edge(selectedNode.node, circle.node, Double.valueOf(weight.getText()), edgeLine, weight));
-//                                circle.node.adjacents.add(new Edge(circle.node, selectedNode.node, Double.valueOf(weight.getText()), edgeLine, weight));
-//                                edges.add(edgeLine);
-//                                realEdges.add(selectedNode.node.adjacents.get(selectedNode.node.adjacents.size() - 1));
-//                                realEdges.add(circle.node.adjacents.get(circle.node.adjacents.size() - 1));
+                                selectedVertex.vertex.adjacents.add(new Edge(selectedVertex.vertex, circle.vertex, Double.valueOf(weight.getText()), edgeLine, weight));
+                                circle.vertex.adjacents.add(new Edge(circle.vertex, selectedVertex.vertex, Double.valueOf(weight.getText()), edgeLine, weight));
+                                edges.add(edgeLine);
+                                realEdges.add(selectedVertex.vertex.adjacents.get(selectedVertex.vertex.adjacents.size() - 1));
+                                realEdges.add(circle.vertex.adjacents.get(circle.vertex.adjacents.size() - 1));
 //                                line_arrow = edgeLine;
 //
 //                            } else if (directed) {
@@ -383,18 +387,21 @@ public class Controller implements Initializable {
                     circle.isSelected = true;
                     selectedVertex = circle;
 
-//                    // WHAT TO DO WHEN SELECTED ON ACTIVE ALGORITHM
-//                    if (calculate && !calculated) {
-//                        if (bfs) {
-//                            algo.newBFS(circle.vertex);
-//                        } else if (dfs) {
-//                            algo.newDFS(circle.vertex);
-//                        } else if (dijkstra) {
+                    // WHAT TO DO WHEN SELECTED ON ACTIVE ALGORITHM
+                    if (calculate && !calculated) {
+                        if (bfs) {
+                            BFS(circle.vertex);
+                        }
+                        else if (dfs) {
+                            DFS(circle.vertex);
+                        }
+//                        else if (dijkstra) {
 //                            algo.newDijkstra(circle.vertex);
 //                        }
 //
-//                        calculated = true;
-//                    } else if (calculate && calculated && !articulationPoint & !mst && !topSortBool) {
+                        calculated = true;
+                    }
+//                    else if (calculate && calculated && !articulationPoint & !mst && !topSortBool) {
 //
 //                        for (VertexFX n : circles) {
 //                            n.isSelected = false;
@@ -420,6 +427,230 @@ public class Controller implements Initializable {
         }
 
     };
+
+    private void DFS(Vertex source) {
+        Image image = new Image(getClass().getResourceAsStream("pause_black_48x48.png"));
+        playPauseImage.setImage(image);
+        st = new SequentialTransition();
+        source.minDistance = 0;
+        source.visited = true;
+        LinkedList<Vertex> s = new LinkedList<>();
+        s.push(source);
+        DFSRecursion(source,0);
+        //<editor-fold defaultstate="collapsed" desc="Animation after algorithm is finished">
+        st.setOnFinished(ev -> {
+            for (VertexFX n : circles) {
+                FillTransition ft1 = new FillTransition(Duration.millis(time), n);
+                ft1.setToValue(Color.BLACK);
+                ft1.play();
+            }
+//            if (directed) {
+//                for (Shape n : edges) {
+//                    n.setFill(Color.BLACK);
+//                }
+//            } else if (undirected) {
+                for (Shape n : edges) {
+                    n.setStroke(Color.BLACK);
+                }
+//            }
+            FillTransition ft1 = new FillTransition(Duration.millis(time), source.circle);
+            ft1.setToValue(Color.RED);
+            ft1.play();
+            Image im = new Image(getClass().getResourceAsStream("play_arrow_black_48x48.png"));
+            playPauseImage.setImage(im);
+            paused = true;
+            playing = false;
+//            textFlow.appendText("---Finished--\n");
+        });
+        st.onFinishedProperty();
+        st.play();
+        playing = true;
+        paused = false;
+        //</editor-fold>
+    }
+
+    private void DFSRecursion(Vertex source, int level) {
+        //<editor-fold defaultstate="collapsed" desc="Animation Control">
+        FillTransition ft = new FillTransition(Duration.millis(time), source.circle);
+        if (source.circle.getFill() == Color.BLACK) {
+            ft.setToValue(Color.FORESTGREEN);
+        }
+//        st.getChildren().add(ft);
+//
+//        String str = "";
+//        for (int i = 0; i < level; i++) {
+//            str = str.concat("\t");
+//        }
+//        str = str.concat("DFS(" + source.name + ") Enter\n");
+//        final String str2 = str;
+//        FadeTransition fd = new FadeTransition(Duration.millis(10), textFlow);
+//        fd.setOnFinished(e -> {
+//            textFlow.appendText(str2);
+//        });
+//        fd.onFinishedProperty();
+//        st.getChildren().add(fd);
+        //</editor-fold>
+        for (Edge e : source.adjacents) {
+            if (e != null) {
+                Vertex v = e.target;
+                if (!v.visited) {
+                    v.minDistance = source.minDistance + 1;
+                    v.visited = true;
+                    v.previous = source;
+//                        v.circle.distance.setText("Dist. : " + v.minDistance);
+                    //<editor-fold defaultstate="collapsed" desc="Change Edge colors">
+//                    if (undirected) {
+                        StrokeTransition ftEdge = new StrokeTransition(Duration.millis(time), e.line);
+                        ftEdge.setToValue(Color.FORESTGREEN);
+                        st.getChildren().add(ftEdge);
+//                    } else if (directed) {
+//                        FillTransition ftEdge = new FillTransition(Duration.millis(time), e.line);
+//                        ftEdge.setToValue(Color.FORESTGREEN);
+//                        st.getChildren().add(ftEdge);
+//                    }
+                    //</editor-fold>
+                    DFSRecursion(v, level + 1);
+                    //<editor-fold defaultstate="collapsed" desc="Animation Control">
+//                    //<editor-fold defaultstate="collapsed" desc="Change Edge colors">
+//                    if (undirected) {
+                        StrokeTransition ftEdge0 = new StrokeTransition(Duration.millis(time), e.line);
+                        ftEdge.setToValue(Color.BLUEVIOLET);
+                        st.getChildren().add(ftEdge0);
+//                    } else if (directed) {
+//                        FillTransition ftEdge = new FillTransition(Duration.millis(time), e.line);
+//                        ftEdge.setToValue(Color.BLUEVIOLET);
+//                        st.getChildren().add(ftEdge);
+//                    }
+                    //</editor-fold>
+                    FillTransition ft1 = new FillTransition(Duration.millis(time), v.circle);
+                    ft1.setToValue(Color.BLUEVIOLET);
+                    ft1.onFinishedProperty();
+                    ft1.setOnFinished(ev -> {
+                        v.circle.distance.setText("Dist. : " + v.minDistance);
+                    });
+                    st.getChildren().add(ft1);
+                    //</editor-fold>
+                }
+            }
+        }
+//        str = "";
+//        for (int i = 0; i < level; i++) {
+//            str = str.concat("\t");
+//        }
+//        str = str.concat("DFS(" + source.name + ") Exit\n");
+//        final String str1 = str;
+//        fd = new FadeTransition(Duration.millis(10), textFlow);
+//        fd.setOnFinished(e -> {
+//            textFlow.appendText(str1);
+//        });
+//        fd.onFinishedProperty();
+//        st.getChildren().add(fd);
+    }
+
+    private void BFS(Vertex source) {
+        Image image = new Image(getClass().getResourceAsStream("pause_black_48x48.png"));
+        playPauseImage.setImage(image);
+                st = new SequentialTransition();
+                source.minDistance = 0;
+                source.visited = true;
+                LinkedList<Vertex> q = new LinkedList<>();
+                q.push(source);
+                while (!q.isEmpty()) {
+                    Vertex u = q.removeLast();
+                    FillTransition ft = new FillTransition(Duration.millis(time),u.circle);
+                    if (u.circle.getFill() == Color.BLACK) {
+                        ft.setToValue(Color.CHOCOLATE);
+                    }
+                    st.getChildren().add(ft);
+
+                    System.out.println(u.name);
+                    for (Edge e: u.adjacents) {
+                        if (e != null) {
+                            Vertex v = e.target;
+                            if (!v.visited) {
+                                v.minDistance = u.minDistance + 1;
+                                v.visited = true;
+                                q.push(v);
+                                v.previous = u;
+
+                                //Vertex visiting animation
+                                //change Edge color
+                                StrokeTransition ftEdge = new StrokeTransition(Duration.millis(time), e.line);
+                                ftEdge.setToValue(Color.FORESTGREEN);
+                                st.getChildren().add(ftEdge);
+                                FillTransition ft1 = new FillTransition(Duration.millis(time), v.circle);
+                                ft1.setToValue(Color.FORESTGREEN);
+                                ft1.setOnFinished(ev -> {
+                                    v.circle.distance.setText("Dist. : " + v.minDistance);
+                                });
+                                ft1.onFinishedProperty();
+                                st.getChildren().add(ft1);
+                            }
+                        }
+                    }
+                    FillTransition ft2 = new FillTransition(Duration.millis(time), u.circle);
+                    ft2.setToValue(Color.BLUEVIOLET);
+                    st.getChildren().add(ft2);
+                }
+
+                st.setOnFinished(ev -> {
+                    for (VertexFX n: circles) {
+                        FillTransition ft1 = new FillTransition(Duration.millis(time),n);
+                        ft1.setToValue(Color.BLACK);
+                        ft1.play();
+                    }
+//            if (directed) {
+//                for (Shape n : edges) {
+//                    n.setFill(Color.BLACK);
+//                }
+//            } else if (undirected) {
+                    for (Shape n : edges) {
+                        n.setStroke(Color.BLACK);
+                    }
+//            }
+                    FillTransition ft1 = new FillTransition(Duration.millis(time), source.circle);
+                    ft1.setToValue(Color.RED);
+                    ft1.play();
+                });
+                st.onFinishedProperty();
+                st.play();
+                playing = true;
+                paused = false;
+
+    }
+
+    /**
+     * Event handler for the Play/Pause button.
+     *
+     * @param event
+     */
+    @FXML
+    public void PlayPauseHandle(ActionEvent event) {
+        try{
+            if (playing && st != null && st.getStatus() == Animation.Status.RUNNING) {
+                Image image = new Image(getClass().getResourceAsStream("play_arrow_black_48x48.png"));
+                playPauseImage.setImage(image);
+                System.out.println("PAUSED");
+                st.pause();
+                paused = true;
+                playing = false;
+                return;
+            } else if (paused && st != null) {
+                Image image = new Image(getClass().getResourceAsStream("pause_black_48x48.png"));
+                playPauseImage.setImage(image);
+                if(st.getStatus() == Animation.Status.PAUSED)
+                    st.play();
+                else if(st.getStatus() == Animation.Status.STOPPED)
+                    st.playFromStart();
+                playing = true;
+                paused = false;
+                return;
+            }
+        } catch(Exception e){
+            System.out.println("Error while play/pause: " + e);
+            ClearHandle(null);
+        }
+    }
 
     /**
      * Event handler for the Add Edge button.
@@ -545,8 +776,8 @@ public class Controller implements Initializable {
         addVertexButton.setDisable(false);
         clearButton.setDisable(true);
 //        algo = new Algorithm();
-//        javafx.scene.image.Image image = new javafx.scene.image.Image(getClass().getResourceAsStream("/pause_black_48x48.png"));
-//        playPauseImage.setImage(image);
+        javafx.scene.image.Image image = new javafx.scene.image.Image(getClass().getResourceAsStream("play_arrow_black_48x48.png"));
+        playPauseImage.setImage(image);
 //        hiddenPane.setPinnedSide(null);
 
         bfsButton.setDisable(true);
@@ -564,13 +795,13 @@ public class Controller implements Initializable {
      */
     @FXML
     public void ClearHandle(ActionEvent event) {
-//        if(st != null && st.getStatus() != Animation.Status.STOPPED)
-//            st.stop();
-//        if(st != null) st.getChildren().clear();
+        if(st != null && st.getStatus() != Animation.Status.STOPPED)
+            st.stop();
+        if(st != null) st.getChildren().clear();
 //        menuBool = false;
         selectedVertex = null;
         calculated = false;
-        System.out.println("IN CLEAR:" + circles.size());
+        System.out.println("CLEAR:" + circles.size());
         for (VertexFX n : circles) {
             n.isSelected = false;
             n.vertex.visited = false;
@@ -608,8 +839,8 @@ public class Controller implements Initializable {
 //        }
 //        textFlow.clear();
 //
-//        javafx.scene.image.Image image = new Image(getClass().getResourceAsStream("/pause_black_48x48.png"));
-//        playPauseImage.setImage(image);
+        javafx.scene.image.Image image = new Image(getClass().getResourceAsStream("play_arrow_black_48x48.png"));
+        playPauseImage.setImage(image);
 //
 //        distances = new ArrayList<>();
 //        visitTime = new ArrayList<>();
@@ -648,6 +879,7 @@ public class Controller implements Initializable {
             this.setOpacity(0.5);
             this.setBlendMode(BlendMode.MULTIPLY);
             this.setId("vertex");
+            this.setCursor(Cursor.DEFAULT);
 
 //            RightClickMenu rt = new RightClickMenu(this);
 //            ContextMenu menu = rt.getMenu();
@@ -662,9 +894,895 @@ public class Controller implements Initializable {
 //                menuBool = false;
 //            });
 //
-//            circles.add(this);
-//            System.out.println("ADDing: " + circles.size());
+            circles.add(this);
+            System.out.println("ADDED: " + circles.size());
         }
     }
+
+    public class Algorithm {
+
+//        //<editor-fold defaultstate="collapsed" desc="Dijkstra">
+//        public void newDijkstra(Node source) {
+//            new Dijkstra(source);
+//        }
+//
+//        class Dijkstra {
+//
+//            Dijkstra(Node source) {
+//
+//                //<editor-fold defaultstate="collapsed" desc="Animation Control">
+//                for (NodeFX n : circles) {
+//                    distances.add(n.distance);
+//                    n.distance.setLayoutX(n.point.x + 20);
+//                    n.distance.setLayoutY(n.point.y);
+//                    canvasGroup.getChildren().add(n.distance);
+//                }
+//                sourceText.setLayoutX(source.circle.point.x + 20);
+//                sourceText.setLayoutY(source.circle.point.y + 10);
+//                canvasGroup.getChildren().add(sourceText);
+//                SequentialTransition st = new SequentialTransition();
+//                source.circle.distance.setText("Dist. : " + 0);
+//                //</editor-fold>
+//
+//                source.minDistance = 0;
+//                PriorityQueue<Node> pq = new PriorityQueue<Node>();
+//                pq.add(source);
+//                while (!pq.isEmpty()) {
+//                    Node u = pq.poll();
+//                    System.out.println(u.name);
+//                    //<editor-fold defaultstate="collapsed" desc="Animation Control">
+//                    FillTransition ft = new FillTransition(Duration.millis(time), u.circle);
+//                    ft.setToValue(Color.CHOCOLATE);
+//                    st.getChildren().add(ft);
+//                    String str = "";
+//                    str = str.concat("Popped : Node(" + u.name + "), Current Distance: " + u.minDistance + "\n");
+//                    final String str2 = str;
+//                    FadeTransition fd = new FadeTransition(Duration.millis(10), textFlow);
+//                    fd.setOnFinished(e -> {
+//                        textFlow.appendText(str2);
+//                    });
+//                    fd.onFinishedProperty();
+//                    st.getChildren().add(fd);
+//                    //</editor-fold>
+//                    System.out.println(u.name);
+//                    for (Edge e : u.adjacents) {
+//                        if (e != null) {
+//                            Node v = e.target;
+//                            System.out.println("HERE " + v.name);
+//                            if (u.minDistance + e.weight < v.minDistance) {
+//                                pq.remove(v);
+//                                v.minDistance = u.minDistance + e.weight;
+//                                v.previous = u;
+//                                pq.add(v);
+//                                //<editor-fold defaultstate="collapsed" desc="Node visiting animation">
+//                                //<editor-fold defaultstate="collapsed" desc="Change Edge colors">
+//                                if (undirected) {
+//                                    StrokeTransition ftEdge = new StrokeTransition(Duration.millis(time), e.line);
+//                                    ftEdge.setToValue(Color.FORESTGREEN);
+//                                    st.getChildren().add(ftEdge);
+//                                } else if (directed) {
+//                                    FillTransition ftEdge = new FillTransition(Duration.millis(time), e.line);
+//                                    ftEdge.setToValue(Color.FORESTGREEN);
+//                                    st.getChildren().add(ftEdge);
+//                                }
+//                                //</editor-fold>
+//                                FillTransition ft1 = new FillTransition(Duration.millis(time), v.circle);
+//                                ft1.setToValue(Color.FORESTGREEN);
+//                                ft1.setOnFinished(ev -> {
+//                                    v.circle.distance.setText("Dist. : " + v.minDistance);
+//                                });
+//                                ft1.onFinishedProperty();
+//                                st.getChildren().add(ft1);
+//
+//                                str = "\t";
+//                                str = str.concat("Pushing : Node(" + v.name + "), (" + u.name + "--" + v.name + ") Distance : " + v.minDistance + "\n");
+//                                final String str1 = str;
+//                                FadeTransition fd2 = new FadeTransition(Duration.millis(10), textFlow);
+//                                fd2.setOnFinished(ev -> {
+//                                    textFlow.appendText(str1);
+//                                });
+//                                fd2.onFinishedProperty();
+//                                st.getChildren().add(fd2);
+//                                //</editor-fold>
+//                            }
+//                        }
+//                    }
+//                    //<editor-fold defaultstate="collapsed" desc="Animation Control">
+//                    FillTransition ft2 = new FillTransition(Duration.millis(time), u.circle);
+//                    ft2.setToValue(Color.BLUEVIOLET);
+//                    st.getChildren().add(ft2);
+//                    //</editor-fold>
+//                }
+//
+//                //<editor-fold defaultstate="collapsed" desc="Animation Control">
+//                st.setOnFinished(ev -> {
+//                    for (NodeFX n : circles) {
+//                        FillTransition ft1 = new FillTransition(Duration.millis(time), n);
+//                        ft1.setToValue(Color.BLACK);
+//                        ft1.play();
+//                    }
+//                    if (directed) {
+//                        for (Shape n : edges) {
+//                            n.setFill(Color.BLACK);
+//                        }
+//                    } else if (undirected) {
+//                        for (Shape n : edges) {
+//                            n.setStroke(Color.BLACK);
+//                        }
+//                    }
+//                    FillTransition ft1 = new FillTransition(Duration.millis(time), source.circle);
+//                    ft1.setToValue(Color.RED);
+//                    ft1.play();
+//                    Image image = new Image(getClass().getResourceAsStream("/play_arrow_black_48x48.png"));
+//                    playPauseImage.setImage(image);
+//                    paused = true;
+//                    playing = false;
+//                    textFlow.appendText("---Finished--\n");
+//                });
+//                st.onFinishedProperty();
+//                st.play();
+//                playing = true;
+//                paused = false;
+//                //</editor-fold>
+//            }
+//        }
+//        //</editor-fold>
+
+        //<editor-fold defaultstate="collapsed" desc="BFS">
+        public void newBFS(Vertex source) {
+            new BFS(source);
+        }
+
+        class BFS {
+            BFS(Vertex source) {
+                st = new SequentialTransition();
+                source.minDistance = 0;
+                source.visited = true;
+                LinkedList<Vertex> q = new LinkedList<>();
+                q.push(source);
+                while (!q.isEmpty()) {
+                    Vertex u = q.removeLast();
+                    FillTransition ft = new FillTransition(Duration.millis(time),u.circle);
+                    if (u.circle.getFill() == Color.BLACK) {
+                        ft.setToValue(Color.CHOCOLATE);
+                    }
+                    st.getChildren().add(ft);
+
+                    System.out.println(u.name);
+                    for (Edge e: u.adjacents) {
+                        if (e != null) {
+                            Vertex v = e.target;
+                            if (!v.visited) {
+                                v.minDistance = u.minDistance + 1;
+                                v.visited = true;
+                                q.push(v);
+                                v.previous = u;
+
+                                //Vertex visiting animation
+                                //change Edge color
+                                StrokeTransition ftEdge = new StrokeTransition(Duration.millis(time), e.line);
+                                ftEdge.setToValue(Color.FORESTGREEN);
+                                st.getChildren().add(ftEdge);
+                                FillTransition ft1 = new FillTransition(Duration.millis(time), v.circle);
+                                ft1.setToValue(Color.FORESTGREEN);
+                                ft1.setOnFinished(ev -> {
+                                    v.circle.distance.setText("Dist. : " + v.minDistance);
+                                });
+                                ft1.onFinishedProperty();
+                                st.getChildren().add(ft1);
+                            }
+                        }
+                    }
+                    FillTransition ft2 = new FillTransition(Duration.millis(time), u.circle);
+                    ft2.setToValue(Color.BLUEVIOLET);
+                    st.getChildren().add(ft2);
+                }
+
+                st.setOnFinished(ev -> {
+                    for (VertexFX n: circles) {
+                        FillTransition ft1 = new FillTransition(Duration.millis(time),n);
+                        ft1.setToValue(Color.BLACK);
+                        ft1.play();
+                    }
+//            if (directed) {
+//                for (Shape n : edges) {
+//                    n.setFill(Color.BLACK);
+//                }
+//            } else if (undirected) {
+                    for (Shape n : edges) {
+                        n.setStroke(Color.BLACK);
+                    }
+//            }
+                    FillTransition ft1 = new FillTransition(Duration.millis(time), source.circle);
+                    ft1.setToValue(Color.RED);
+                    ft1.play();
+                });
+                st.onFinishedProperty();
+                st.play();
+                playing = true;
+                paused = false;
+
+            }
+        }
+        //</editor-fold>
+
+//        //<editor-fold defaultstate="collapsed" desc="TopSort">
+//        public void newTopSort() {
+//            new TopSort();
+//        }
+//
+//        class TopSort {
+//
+//            String reverse = "";
+//            List<String> topSort = new ArrayList<>();
+//            boolean cycleFound = false;
+//
+//            TopSort() {
+//
+//                //<editor-fold defaultstate="collapsed" desc="Animation Setup Distances">
+//                st = new SequentialTransition();
+//                //</editor-fold>
+//
+//                cycleFound = false;
+//                for (NodeFX n : circles) {
+//                    if (n.node.DAGColor == 0) {
+//                        cycleExists(n.node, 0);
+//                    }
+//                }
+//                if (cycleFound == false) {
+//                    for (NodeFX source : circles) {
+//                        if (source.node.visited == false) {
+//                            topsortRecursion(source.node, 0);
+//                        }
+//                    }
+//
+//                    System.out.println("Hello World " + topSort);
+//                    Collections.reverse(topSort);
+//                    for (String s : topSort) {
+//                        reverse += " -> " + s;
+//                    }
+//                    reverse = reverse.replaceFirst(" -> ", "");
+//                    System.out.println(reverse);
+//
+//                    //<editor-fold defaultstate="collapsed" desc="Animation after algorithm is finished">
+//                    st.setOnFinished(ev -> {
+//                        for (NodeFX n : circles) {
+//                            FillTransition ft1 = new FillTransition(Duration.millis(time), n);
+//                            ft1.setToValue(Color.BLACK);
+//                            ft1.play();
+//                        }
+//                        if (directed) {
+//                            for (Shape n : edges) {
+//                                n.setFill(Color.BLACK);
+//                            }
+//                        } else if (undirected) {
+//                            for (Shape n : edges) {
+//                                n.setStroke(Color.BLACK);
+//                            }
+//                        }
+//
+//                        Image image = new Image(getClass().getResourceAsStream("/play_arrow_black_48x48.png"));
+//                        playPauseImage.setImage(image);
+//                        paused = true;
+//                        playing = false;
+//                        textFlow.appendText("---Finished--\n\n");
+//                        textFlow.appendText("Top Sort: " + reverse + "\n");
+//
+//                    });
+//                    st.onFinishedProperty();
+//                    st.play();
+//
+//                    playing = true;
+//                    paused = false;
+//                    //</editor-fold>
+//                } else {
+//                    System.out.println("Cycle");
+//                    BoxBlur blur = new BoxBlur(3, 3, 3);
+//
+//                    JFXDialogLayout dialogLayout = new JFXDialogLayout();
+//                    dialogLayout.setStyle("-fx-background-color:#dfe6e9");
+//                    JFXDialog dialog = new JFXDialog(stackRoot, dialogLayout, JFXDialog.DialogTransition.TOP);
+//
+//                    JFXButton button = new JFXButton("OK");
+//                    button.setPrefSize(50, 30);
+//                    button.getStyleClass().add("dialog-button");
+//                    button.setButtonType(JFXButton.ButtonType.RAISED);
+//                    dialogLayout.setActions(button);
+//                    Label message = new Label("     Cycle Detected!\n"
+//                            + "Cannot run TopSort on a  Directed Cyclic Graph!");
+//                    message.setId("message");
+//                    dialogLayout.setBody(message);
+//                    button.setOnAction(e -> {
+//                        dialog.close();
+//                        anchorRoot.setEffect(null);
+//                    });
+//                    dialog.setOnDialogClosed(e -> {
+//                        stackRoot.toBack();
+//                        anchorRoot.setEffect(null);
+//                        ClearHandle(null);
+//                    });
+//
+//
+//                    stackRoot.toFront();
+//                    dialog.toFront();
+//                    dialog.show();
+//                    anchorRoot.setEffect(blur);
+//                    dialogLayout.setPadding(new Insets(0, 0, 0, 0));
+//                }
+//            }
+//
+//            void cycleExists(Node source, int level) {
+//                source.DAGColor = 1;
+//                for (Edge e : source.adjacents) {
+//                    if (e != null) {
+//                        Node v = e.target;
+//                        if (v.DAGColor == 1) {
+//                            cycleFound = true;
+//                        } else if (v.DAGColor == 0) {
+//                            v.previous = source;
+//                            cycleExists(v, level + 1);
+//                        }
+//                    }
+//                }
+//                source.DAGColor = 2;
+//            }
+//
+//            public void topsortRecursion(Node source, int level) {
+//                //<editor-fold defaultstate="collapsed" desc="Animation Control">
+//                FillTransition ft = new FillTransition(Duration.millis(time), source.circle);
+//                if (source.circle.getFill() == Color.BLACK) {
+//                    ft.setToValue(Color.FORESTGREEN);
+//                }
+//                st.getChildren().add(ft);
+//
+//                String str = "";
+//                for (int i = 0; i < level; i++) {
+//                    str = str.concat("\t");
+//                }
+//                str = str.concat("Recursion(" + source.name + ") Enter\n");
+//                final String str2 = str;
+//                FadeTransition fd = new FadeTransition(Duration.millis(10), textFlow);
+//                fd.setOnFinished(e -> {
+//                    textFlow.appendText(str2);
+//                });
+//                fd.onFinishedProperty();
+//                st.getChildren().add(fd);
+//                //</editor-fold>
+//                source.visited = true;
+//                for (Edge e : source.adjacents) {
+//                    if (e != null) {
+//                        Node v = e.target;
+//                        if (!v.visited) {
+//                            v.minDistance = source.minDistance + 1;
+//                            v.previous = source;
+//                            //<editor-fold defaultstate="collapsed" desc="Change Edge colors">
+//                            if (undirected) {
+//                                StrokeTransition ftEdge = new StrokeTransition(Duration.millis(time), e.line);
+//                                ftEdge.setToValue(Color.FORESTGREEN);
+//                                st.getChildren().add(ftEdge);
+//                            } else if (directed) {
+//                                FillTransition ftEdge = new FillTransition(Duration.millis(time), e.line);
+//                                ftEdge.setToValue(Color.FORESTGREEN);
+//                                st.getChildren().add(ftEdge);
+//                            }
+//                            //</editor-fold>
+//                            topsortRecursion(v, level + 1);
+//                            //<editor-fold defaultstate="collapsed" desc="Animation Control">
+//                            //<editor-fold defaultstate="collapsed" desc="Change Edge colors">
+//                            if (undirected) {
+//                                StrokeTransition ftEdge = new StrokeTransition(Duration.millis(time), e.line);
+//                                ftEdge.setToValue(Color.BLUEVIOLET);
+//                                st.getChildren().add(ftEdge);
+//                            } else if (directed) {
+//                                FillTransition ftEdge = new FillTransition(Duration.millis(time), e.line);
+//                                ftEdge.setToValue(Color.BLUEVIOLET);
+//                                st.getChildren().add(ftEdge);
+//                            }
+//                            //</editor-fold>
+//                            FillTransition ft1 = new FillTransition(Duration.millis(time), v.circle);
+//                            ft1.setToValue(Color.BLUEVIOLET);
+//                            ft1.onFinishedProperty();
+//                            st.getChildren().add(ft1);
+//                            //</editor-fold>
+//                        }
+//                    }
+//                }
+//                str = "";
+//                for (int i = 0; i < level; i++) {
+//                    str = str.concat("\t");
+//                }
+//                topSort.add(source.name);
+//
+//                //<editor-fold defaultstate="collapsed" desc="Recursion exit text">
+//                str = str.concat("Recursion(" + source.name + ") Exit\n");
+//                final String str1 = str;
+//                fd = new FadeTransition(Duration.millis(10), textFlow);
+//                fd.setOnFinished(e -> {
+//                    textFlow.appendText(str1);
+//                });
+//                fd.onFinishedProperty();
+//                st.getChildren().add(fd);
+//                //</editor-fold>
+//            }
+//        }
+//        //</editor-fold>
+//
+//        //<editor-fold defaultstate="collapsed" desc="Articulation Point">
+//        public void newArticulationPoint(Node s) {
+//            new ArticulationPoint(s);
+//        }
+//
+//        class ArticulationPoint {
+//
+//            int timeCnt = 0;
+//
+//            ArticulationPoint(Node source) {
+//
+//                //<editor-fold defaultstate="collapsed" desc="Animation Setup Distances">
+//                for (NodeFX n : circles) {
+//                    visitTime.add(n.visitTime);
+//                    n.visitTime.setLayoutX(n.point.x + 20);
+//                    n.visitTime.setLayoutY(n.point.y);
+//                    canvasGroup.getChildren().add(n.visitTime);
+//
+//                    lowTime.add(n.lowTime);
+//                    n.lowTime.setLayoutX(n.point.x + 20);
+//                    n.lowTime.setLayoutY(n.point.y + 13);
+//                    canvasGroup.getChildren().add(n.lowTime);
+//
+//                    n.node.isArticulationPoint = false;
+//                }
+//
+//                st = new SequentialTransition();
+//                source.circle.lowTime.setText("Low : " + source.name);
+//                source.circle.visitTime.setText("Visit : " + source.visitTime);
+//                //</editor-fold>
+//
+//                timeCnt = 0;
+//                RecAP(source);
+//
+//                for (NodeFX n : circles) {
+//                    if (n.node.isArticulationPoint) {
+//                        System.out.println(n.node.name);
+//                    }
+//                }
+//
+//                //<editor-fold defaultstate="collapsed" desc="Animation after algorithm is finished">
+//                st.setOnFinished(ev -> {
+//                    for (NodeFX n : circles) {
+//                        FillTransition ft1 = new FillTransition(Duration.millis(time), n);
+//                        ft1.setToValue(Color.BLACK);
+//                        ft1.play();
+//                    }
+//                    if (directed) {
+//                        for (Shape n : edges) {
+//                            n.setFill(Color.BLACK);
+//                        }
+//                    } else if (undirected) {
+//                        for (Shape n : edges) {
+//                            n.setStroke(Color.BLACK);
+//                        }
+//                    }
+//                    for (NodeFX n : circles) {
+//                        if (n.node.isArticulationPoint) {
+//                            FillTransition ft1 = new FillTransition(Duration.millis(time), n);
+//                            ft1.setToValue(Color.CHARTREUSE);
+//                            ft1.play();
+//                        }
+//                    }
+//                    Image image = new Image(getClass().getResourceAsStream("/play_arrow_black_48x48.png"));
+//                    playPauseImage.setImage(image);
+//                    paused = true;
+//                    playing = false;
+//                });
+//                st.onFinishedProperty();
+//                st.play();
+//                playing = true;
+//                //</editor-fold>
+//            }
+//
+//            void RecAP(Node s) {
+//                //<editor-fold defaultstate="collapsed" desc="Animation Control">
+//                FillTransition ft = new FillTransition(Duration.millis(time), s.circle);
+//                if (s.circle.getFill() == Color.BLACK) {
+//                    ft.setToValue(Color.FORESTGREEN);
+//                }
+//                ft.setOnFinished(ev -> {
+//                    s.circle.lowTime.setText("Low : " + s.lowTime);
+//                    s.circle.visitTime.setText("Visit : " + s.visitTime);
+//                });
+//                st.getChildren().add(ft);
+//                //</editor-fold>
+//                s.visited = true;
+//                s.visitTime = timeCnt;
+//                s.lowTime = timeCnt;
+//
+//                timeCnt++;
+//                int childCount = 0;
+//
+//                for (Edge e : s.adjacents) {
+//                    if (e != null) {
+//                        Node v = e.target;
+//                        if (s.previous == v) {
+//                            continue;
+//                        }
+//                        if (!v.visited) {
+//                            v.previous = s;
+//                            childCount++;
+//                            //<editor-fold defaultstate="collapsed" desc="Change Edge colors">
+//                            if (undirected) {
+//                                StrokeTransition ftEdge = new StrokeTransition(Duration.millis(time), e.line);
+//                                ftEdge.setToValue(Color.FORESTGREEN);
+//                                st.getChildren().add(ftEdge);
+//                            } else if (directed) {
+//                                FillTransition ftEdge = new FillTransition(Duration.millis(time), e.line);
+//                                ftEdge.setToValue(Color.FORESTGREEN);
+//                                st.getChildren().add(ftEdge);
+//                            }
+//                            //</editor-fold>
+//                            RecAP(v);
+//
+//                            s.lowTime = Math.min(s.lowTime, v.lowTime);
+//                            if (s.visitTime <= v.lowTime && s.previous != null) {
+//                                s.isArticulationPoint = true;
+//                            }
+//
+//                            //<editor-fold defaultstate="collapsed" desc="Animation Control">
+//                            ///<editor-fold defaultstate="collapsed" desc="Change Edge colors">
+//                            if (undirected) {
+//                                StrokeTransition ftEdge = new StrokeTransition(Duration.millis(time), e.line);
+//                                ftEdge.setToValue(Color.BLUEVIOLET);
+//                                st.getChildren().add(ftEdge);
+//                            } else if (directed) {
+//                                FillTransition ftEdge = new FillTransition(Duration.millis(time), e.line);
+//                                ftEdge.setToValue(Color.BLUEVIOLET);
+//                                st.getChildren().add(ftEdge);
+//                            }
+//                            //</editor-fold>
+//                            FillTransition ft1 = new FillTransition(Duration.millis(time), v.circle);
+//                            ft1.setToValue(Color.BLUEVIOLET);
+//                            ft1.setOnFinished(ev -> {
+//                                s.circle.lowTime.setText("Low : " + s.lowTime);
+//                                s.circle.visitTime.setText("Visit : " + s.visitTime);
+//                            });
+//                            ft1.onFinishedProperty();
+//                            st.getChildren().add(ft1);
+//                            //</editor-fold>
+//                        } else {
+//                            s.lowTime = Math.min(s.lowTime, v.visitTime);
+//                        }
+//                    }
+//                }
+//                if (childCount > 1 && s.previous == null) {
+//                    s.isArticulationPoint = true;
+//                }
+//            }
+//        }
+//        //</editor-fold>
+//
+//        //<editor-fold defaultstate="collapsed" desc="MST">
+//        public void newMST() {
+//            new MST();
+//        }
+//
+//        class MST {
+//
+//            int mstValue = 0;
+//
+//            Node findParent(Node x) {
+//                if (x == x.previous) {
+//                    return x;
+//                }
+//                x.previous = findParent(x.previous);
+//                return x.previous;
+//            }
+//
+//            void unionNode(Node x, Node y) {
+//                Node px = findParent(x);
+//                Node py = findParent(y);
+//                if (px == py) {
+//                    return;
+//                }
+//                if (Integer.valueOf(px.name) < Integer.valueOf(py.name)) {
+//                    px.previous = py;
+//                } else {
+//                    py.previous = px;
+//                }
+//            }
+//
+//            public MST() {
+//
+//                st = new SequentialTransition();
+//                for (NodeFX x : circles) {
+//                    x.node.previous = x.node;
+//                }
+//
+//                //<editor-fold defaultstate="collapsed" desc="Detail Information">
+//                String init = "Intially : \n";
+//                for (NodeFX x : circles) {
+//                    final String s = "Node : " + x.node.name + " , Parent: " + x.node.previous.name + "\n";
+//                    FadeTransition fd = new FadeTransition(Duration.millis(10), textFlow);
+//                    fd.setOnFinished(e -> {
+//                        textFlow.appendText(s);
+//                    });
+//                    fd.onFinishedProperty();
+//                    st.getChildren().add(fd);
+//                }
+//                final String s = "Start Algorithm :---\n";
+//                FadeTransition fdss = new FadeTransition(Duration.millis(10), textFlow);
+//                fdss.setOnFinished(ev -> {
+//                    textFlow.appendText(s);
+//                });
+//                fdss.onFinishedProperty();
+//                st.getChildren().add(fdss);
+//                //</editor-fold>
+//                Collections.sort(mstEdges, new Comparator<Edge>() {
+//                    public int compare(Edge o1, Edge o2) {
+//                        if (o1.weight == o2.weight) {
+//                            return 0;
+//                        }
+//                        return o1.weight > o2.weight ? 1 : -1;
+//                    }
+//                });
+//
+//                for (Edge e : mstEdges) {
+//
+//                    StrokeTransition ft1 = new StrokeTransition(Duration.millis(time), e.line);
+//                    ft1.setToValue(Color.DARKORANGE);
+//                    st.getChildren().add(ft1);
+//
+//                    //<editor-fold defaultstate="collapsed" desc="Detail Information">
+//                    final String se = "Selected Edge:- (" + e.source.name.trim() + "--" + e.target.name.trim() + ") Weight: " + String.valueOf(e.weight) + " \n";
+//                    FadeTransition fdx = new FadeTransition(Duration.millis(10), textFlow);
+//                    fdx.setOnFinished(evx -> {
+//                        textFlow.appendText(se);
+//                    });
+//                    fdx.onFinishedProperty();
+//                    st.getChildren().add(fdx);
+//
+//                    final String s1 = "\t-> Node :" + e.source.name.trim() + "  Parent: " + findParent(e.source.previous).name.trim() + "\n";
+//                    FadeTransition fdx2 = new FadeTransition(Duration.millis(10), textFlow);
+//                    fdx2.setOnFinished(evx -> {
+//                        textFlow.appendText(s1);
+//                    });
+//                    fdx2.onFinishedProperty();
+//                    st.getChildren().add(fdx2);
+//
+//                    final String s2 = "\t-> Node :" + e.target.name.trim() + "  Parent: " + findParent(e.target.previous).name.trim() + "\n";
+//                    FadeTransition fdx3 = new FadeTransition(Duration.millis(10), textFlow);
+//                    fdx3.setOnFinished(evx -> {
+//                        textFlow.appendText(s2);
+//                    });
+//                    fdx3.onFinishedProperty();
+//                    st.getChildren().add(fdx3);
+//                    //</editor-fold>
+//
+//                    if (findParent(e.source.previous) != findParent(e.target.previous)) {
+//                        unionNode(e.source, e.target);
+//                        mstValue += e.weight;
+//
+//                        //<editor-fold defaultstate="collapsed" desc="Detail Information">
+//                        final String sa = "\t---->Unioned\n";
+//                        final String sa1 = "\t\t->Node :" + e.source.name.trim() + "  Parent: " + findParent(e.source.previous).name.trim() + "\n";
+//                        final String sa2 = "\t\t->Node :" + e.target.name.trim() + "  Parent: " + findParent(e.target.previous).name.trim() + "\n";
+//                        FadeTransition fdx4 = new FadeTransition(Duration.millis(10), textFlow);
+//                        fdx4.setOnFinished(evx -> {
+//                            textFlow.appendText(sa);
+//                        });
+//                        fdx4.onFinishedProperty();
+//                        st.getChildren().add(fdx4);
+//                        FadeTransition fdx5 = new FadeTransition(Duration.millis(10), textFlow);
+//                        fdx5.setOnFinished(evx -> {
+//                            textFlow.appendText(sa1);
+//                        });
+//                        fdx5.onFinishedProperty();
+//                        st.getChildren().add(fdx5);
+//                        FadeTransition fdx6 = new FadeTransition(Duration.millis(10), textFlow);
+//                        fdx6.setOnFinished(evx -> {
+//                            textFlow.appendText(sa2);
+//                        });
+//                        fdx6.onFinishedProperty();
+//                        st.getChildren().add(fdx6);
+//
+//                        StrokeTransition ft2 = new StrokeTransition(Duration.millis(time), e.line);
+//                        ft2.setToValue(Color.DARKGREEN);
+//                        st.getChildren().add(ft2);
+//
+//                        FillTransition ft3 = new FillTransition(Duration.millis(time), e.source.circle);
+//                        ft3.setToValue(Color.AQUA);
+//                        st.getChildren().add(ft3);
+//
+//                        ft3 = new FillTransition(Duration.millis(time), e.target.circle);
+//                        ft3.setToValue(Color.AQUA);
+//                        st.getChildren().add(ft3);
+//                        //</editor-fold>
+//                    } else {
+//                        //<editor-fold defaultstate="collapsed" desc="Detail Info">
+//                        final String sa = "\t---->Cycle Detected\n";
+//                        FadeTransition fdx7 = new FadeTransition(Duration.millis(10), textFlow);
+//                        fdx7.setOnFinished(evx -> {
+//                            textFlow.appendText(sa);
+//                        });
+//                        fdx7.onFinishedProperty();
+//                        st.getChildren().add(fdx7);
+//                        //</editor-fold>
+//                        StrokeTransition ft2 = new StrokeTransition(Duration.millis(time), e.line);
+//                        ft2.setToValue(Color.DARKRED);
+//                        st.getChildren().add(ft2);
+//
+//                        ft2 = new StrokeTransition(Duration.millis(time), e.line);
+//                        ft2.setToValue(Color.web("#E0E0E0"));
+//                        st.getChildren().add(ft2);
+//
+//                    }
+//                }
+//
+//                //<editor-fold defaultstate="collapsed" desc="Animation after algorithm is finished">
+//                st.setOnFinished(ev -> {
+//                    Image image = new Image(getClass().getResourceAsStream("/play_arrow_black_48x48.png"));
+//                    playPauseImage.setImage(image);
+//                    paused = true;
+//                    playing = false;
+//                    textFlow.appendText("Minimum Cost of the Graph " + mstValue);
+//                });
+//                st.onFinishedProperty();
+//                st.play();
+//                playing = true;
+//                //</editor-fold>
+//                System.out.println("" + mstValue);
+//            }
+//        }
+//        //</editor-fold>
+//
+//        //<editor-fold defaultstate="collapsed" desc="DFS">
+//        public void newDFS(Node source) {
+//            new DFS(source);
+//        }
+//
+//        class DFS {
+//
+//            DFS(Node source) {
+//
+//                //<editor-fold defaultstate="collapsed" desc="Animation Setup Distances">
+//                for (NodeFX n : circles) {
+//                    distances.add(n.distance);
+//                    n.distance.setLayoutX(n.point.x + 20);
+//                    n.distance.setLayoutY(n.point.y);
+//                    canvasGroup.getChildren().add(n.distance);
+//                }
+//                sourceText.setLayoutX(source.circle.point.x + 20);
+//                sourceText.setLayoutY(source.circle.point.y + 10);
+//                canvasGroup.getChildren().add(sourceText);
+//                st = new SequentialTransition();
+//                source.circle.distance.setText("Dist. : " + 0);
+//                //</editor-fold>
+//
+//                source.minDistance = 0;
+//                source.visited = true;
+//                DFSRecursion(source, 0);
+//
+//                //<editor-fold defaultstate="collapsed" desc="Animation after algorithm is finished">
+//                st.setOnFinished(ev -> {
+//                    for (NodeFX n : circles) {
+//                        FillTransition ft1 = new FillTransition(Duration.millis(time), n);
+//                        ft1.setToValue(Color.BLACK);
+//                        ft1.play();
+//                    }
+//                    if (directed) {
+//                        for (Shape n : edges) {
+//                            n.setFill(Color.BLACK);
+//                        }
+//                    } else if (undirected) {
+//                        for (Shape n : edges) {
+//                            n.setStroke(Color.BLACK);
+//                        }
+//                    }
+//                    FillTransition ft1 = new FillTransition(Duration.millis(time), source.circle);
+//                    ft1.setToValue(Color.RED);
+//                    ft1.play();
+//                    Image image = new Image(getClass().getResourceAsStream("/play_arrow_black_48x48.png"));
+//                    playPauseImage.setImage(image);
+//                    paused = true;
+//                    playing = false;
+//                    textFlow.appendText("---Finished--\n");
+//                });
+//                st.onFinishedProperty();
+//                st.play();
+//                playing = true;
+//                paused = false;
+//                //</editor-fold>
+//            }
+//
+//            public void DFSRecursion(Node source, int level) {
+//                //<editor-fold defaultstate="collapsed" desc="Animation Control">
+//                FillTransition ft = new FillTransition(Duration.millis(time), source.circle);
+//                if (source.circle.getFill() == Color.BLACK) {
+//                    ft.setToValue(Color.FORESTGREEN);
+//                }
+//                st.getChildren().add(ft);
+//
+//                String str = "";
+//                for (int i = 0; i < level; i++) {
+//                    str = str.concat("\t");
+//                }
+//                str = str.concat("DFS(" + source.name + ") Enter\n");
+//                final String str2 = str;
+//                FadeTransition fd = new FadeTransition(Duration.millis(10), textFlow);
+//                fd.setOnFinished(e -> {
+//                    textFlow.appendText(str2);
+//                });
+//                fd.onFinishedProperty();
+//                st.getChildren().add(fd);
+//                //</editor-fold>
+//                for (Edge e : source.adjacents) {
+//                    if (e != null) {
+//                        Node v = e.target;
+//                        if (!v.visited) {
+//                            v.minDistance = source.minDistance + 1;
+//                            v.visited = true;
+//                            v.previous = source;
+////                        v.circle.distance.setText("Dist. : " + v.minDistance);
+//                            //<editor-fold defaultstate="collapsed" desc="Change Edge colors">
+//                            if (undirected) {
+//                                StrokeTransition ftEdge = new StrokeTransition(Duration.millis(time), e.line);
+//                                ftEdge.setToValue(Color.FORESTGREEN);
+//                                st.getChildren().add(ftEdge);
+//                            } else if (directed) {
+//                                FillTransition ftEdge = new FillTransition(Duration.millis(time), e.line);
+//                                ftEdge.setToValue(Color.FORESTGREEN);
+//                                st.getChildren().add(ftEdge);
+//                            }
+//                            //</editor-fold>
+//                            DFSRecursion(v, level + 1);
+//                            //<editor-fold defaultstate="collapsed" desc="Animation Control">
+//                            //<editor-fold defaultstate="collapsed" desc="Change Edge colors">
+//                            if (undirected) {
+//                                StrokeTransition ftEdge = new StrokeTransition(Duration.millis(time), e.line);
+//                                ftEdge.setToValue(Color.BLUEVIOLET);
+//                                st.getChildren().add(ftEdge);
+//                            } else if (directed) {
+//                                FillTransition ftEdge = new FillTransition(Duration.millis(time), e.line);
+//                                ftEdge.setToValue(Color.BLUEVIOLET);
+//                                st.getChildren().add(ftEdge);
+//                            }
+//                            //</editor-fold>
+//                            FillTransition ft1 = new FillTransition(Duration.millis(time), v.circle);
+//                            ft1.setToValue(Color.BLUEVIOLET);
+//                            ft1.onFinishedProperty();
+//                            ft1.setOnFinished(ev -> {
+//                                v.circle.distance.setText("Dist. : " + v.minDistance);
+//                            });
+//                            st.getChildren().add(ft1);
+//                            //</editor-fold>
+//                        }
+//                    }
+//                }
+//                str = "";
+//                for (int i = 0; i < level; i++) {
+//                    str = str.concat("\t");
+//                }
+//                str = str.concat("DFS(" + source.name + ") Exit\n");
+//                final String str1 = str;
+//                fd = new FadeTransition(Duration.millis(10), textFlow);
+//                fd.setOnFinished(e -> {
+//                    textFlow.appendText(str1);
+//                });
+//                fd.onFinishedProperty();
+//                st.getChildren().add(fd);
+//            }
+//        }
+//
+//        //</editor-fold>
+//        public List<Node> getShortestPathTo(Node target) {
+//            List<Node> path = new ArrayList<Node>();
+//            for (Node i = target; i != null; i = i.previous) {
+//                path.add(i);
+//            }
+//            Collections.reverse(path);
+//            return path;
+//        }
+    }
+
+
 
 }
