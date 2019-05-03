@@ -411,7 +411,7 @@ public class Controller implements Initializable {
 //                    }
                 } else {
                     circle.isSelected = false;
-                    FillTransition ft1 = new FillTransition(Duration.millis(300), circle, javafx.scene.paint.Color.RED, Color.BLACK);
+                    FillTransition ft1 = new FillTransition(Duration.millis(300), circle, Color.GREEN, Color.BLACK);
                     ft1.play();
                     selectedVertex = null;
                 }
@@ -465,6 +465,57 @@ public class Controller implements Initializable {
             dijkstraButton.setDisable(false);
             dijkstraButton.setSelected(false);
         }
+    }
+
+    @FXML
+    public void BFSHandle(ActionEvent event) {
+        addVertex = false;
+        addEdge = false;
+        addVertexButton.setSelected(false);
+        addEdgeButton.setSelected(false);
+        addVertexButton.setDisable(true);
+        addEdgeButton.setDisable(true);
+        calculate = true;
+        clearButton.setDisable(false);
+        bfs = true;
+        dfs = false;
+        dijkstra = false;
+        dfsButton.setSelected(false);
+        dijkstraButton.setSelected(false);
+    }
+
+    @FXML
+    public void DFSHandle(ActionEvent event) {
+        addVertex = false;
+        addEdge = false;
+        addVertexButton.setSelected(false);
+        addEdgeButton.setSelected(false);
+        addVertexButton.setDisable(true);
+        addEdgeButton.setDisable(true);
+        calculate = true;
+        clearButton.setDisable(false);
+        dfs = true;
+        bfs = false;
+        dijkstra = false;
+        bfsButton.setSelected(false);
+        dijkstraButton.setSelected(false);
+    }
+
+    @FXML
+    public void DijkstraHandle(ActionEvent event) {
+        addVertex = false;
+        addEdge = false;
+        addVertexButton.setSelected(false);
+        addEdgeButton.setSelected(false);
+        addVertexButton.setDisable(true);
+        addEdgeButton.setDisable(true);
+        calculate = true;
+        clearButton.setDisable(false);
+        bfs = false;
+        dfs = false;
+        dijkstra = true;
+        bfsButton.setSelected(false);
+        dfsButton.setSelected(false);
     }
 
     /**

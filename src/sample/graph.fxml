@@ -68,7 +68,7 @@
                                     <Insets />
                                  </GridPane.margin>
                               </Label>
-                              <JFXToggleButton id="bfsButton" fx:id="bfsButton" scaleX="1.3" scaleY="1.3" scaleZ="1.3" text="BFS" textFill="WHITE" toggleColor="#ff5722" toggleLineColor="#ffab91" unToggleColor="#546e7a" unToggleLineColor="#90a4ae" GridPane.rowIndex="1">
+                              <JFXToggleButton id="bfsButton" fx:id="bfsButton" onAction="#BFSHandle" scaleX="1.3" scaleY="1.3" scaleZ="1.3" text="BFS" textFill="WHITE" toggleColor="#ff5722" toggleLineColor="#ffab91" unToggleColor="#546e7a" unToggleLineColor="#90a4ae" GridPane.rowIndex="1">
                                  <opaqueInsets>
                                     <Insets />
                                  </opaqueInsets>
@@ -76,12 +76,12 @@
                                     <Insets left="60.0" />
                                  </GridPane.margin>
                               </JFXToggleButton>
-                              <JFXToggleButton id="dfsButton" fx:id="dfsButton" scaleX="1.3" scaleY="1.3" scaleZ="1.3" text="DFS" textFill="WHITE" toggleColor="#ff5722" toggleLineColor="#ffab91" unToggleColor="#546e7a" unToggleLineColor="#90a4ae" GridPane.rowIndex="2">
+                              <JFXToggleButton id="dfsButton" fx:id="dfsButton" onAction="#DFSHandle" scaleX="1.3" scaleY="1.3" scaleZ="1.3" text="DFS" textFill="WHITE" toggleColor="#ff5722" toggleLineColor="#ffab91" unToggleColor="#546e7a" unToggleLineColor="#90a4ae" GridPane.rowIndex="2">
                                  <GridPane.margin>
                                     <Insets left="60.0" />
                                  </GridPane.margin>
                               </JFXToggleButton>
-                              <JFXToggleButton fx:id="dijkstraButton" scaleX="1.3" scaleY="1.3" scaleZ="1.3" text="Dijkstra" textFill="WHITE" toggleColor="#ff5722" toggleLineColor="#ffab91" unToggleColor="#546e7a" unToggleLineColor="#90a4ae" GridPane.rowIndex="3">
+                              <JFXToggleButton fx:id="dijkstraButton" onAction="#DijkstraHandle" scaleX="1.3" scaleY="1.3" scaleZ="1.3" text="Dijkstra" textFill="WHITE" toggleColor="#ff5722" toggleLineColor="#ffab91" unToggleColor="#546e7a" unToggleLineColor="#90a4ae" GridPane.rowIndex="3">
                                  <opaqueInsets>
                                     <Insets />
                                  </opaqueInsets>
