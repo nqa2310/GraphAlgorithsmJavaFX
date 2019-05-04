@@ -475,7 +475,7 @@ public class Controller implements Initializable {
         if (source.circle.getFill() == Color.BLACK) {
             ft.setToValue(Color.FORESTGREEN);
         }
-//        st.getChildren().add(ft);
+        st.getChildren().add(ft);
 //
 //        String str = "";
 //        for (int i = 0; i < level; i++) {
@@ -513,9 +513,7 @@ public class Controller implements Initializable {
                     //<editor-fold defaultstate="collapsed" desc="Animation Control">
 //                    //<editor-fold defaultstate="collapsed" desc="Change Edge colors">
 //                    if (undirected) {
-                        StrokeTransition ftEdge0 = new StrokeTransition(Duration.millis(time), e.line);
-                        ftEdge.setToValue(Color.BLUEVIOLET);
-                        st.getChildren().add(ftEdge0);
+
 //                    } else if (directed) {
 //                        FillTransition ftEdge = new FillTransition(Duration.millis(time), e.line);
 //                        ftEdge.setToValue(Color.BLUEVIOLET);
@@ -529,6 +527,9 @@ public class Controller implements Initializable {
                         v.circle.distance.setText("Dist. : " + v.minDistance);
                     });
                     st.getChildren().add(ft1);
+                    StrokeTransition ftEdge0 = new StrokeTransition(Duration.millis(time), e.line);
+                    ftEdge0.setToValue(Color.BLUEVIOLET);
+                    st.getChildren().add(ftEdge0);
                     //</editor-fold>
                 }
             }
