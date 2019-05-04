@@ -1,6 +1,7 @@
 package sample;
 
 import com.jfoenix.controls.*;
+import com.jfoenix.converters.base.NodeConverter;
 import javafx.animation.*;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -11,6 +12,7 @@ import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.control.*;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.effect.Bloom;
 import javafx.scene.effect.BoxBlur;
@@ -26,6 +28,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Shape;
+import javafx.scene.text.Font;
 import javafx.util.Duration;
 
 import java.awt.*;
@@ -75,6 +78,9 @@ public class Controller implements Initializable {
     private JFXSlider slider = new JFXSlider();
     @FXML
     private ImageView playPauseImage;
+    @FXML
+    private JFXComboBox choiceBox;
+
 
     int nVertex = 0;
     int time = 500;
@@ -84,6 +90,7 @@ public class Controller implements Initializable {
     List<VertexFX> circles = new ArrayList<>();
     List<Edge> realEdges = new ArrayList<>();
     List<Shape> edges = new ArrayList<>();
+    List<Label> distances = new ArrayList<>();
 
     boolean addVertex = true, addEdge = false, calculate = false,
             calculated = false, playing = false, paused = false, pinned = false;
@@ -92,10 +99,15 @@ public class Controller implements Initializable {
 
     Algorithm algo = new Algorithm();
 
+    public static TextArea textFlow = new TextArea();
+
     public SequentialTransition st;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        choiceBox.getItems().add(new Label("Weighted"));
+        choiceBox.getItems().add(new Label("Unweighted"));
+        choiceBox.setStyle("-fx-prompt-text-fill: #ffffff;");
         System.out.println("In intit");
 //        hiddenPane.setContent(canvasGroup);
 //        anchorRoot.setManaged(false);
@@ -618,6 +630,125 @@ public class Controller implements Initializable {
                 playing = true;
                 paused = false;
 
+    }
+
+    private void dijkstra(Vertex source) {
+        Image image = new Image(getClass().getResourceAsStream("pause_black_48x48.png"));
+        playPauseImage.setImage(image);
+        //<editor-fold defaultstate="collapsed" desc="Animation Control">
+        for (VertexFX n : circles) {
+            distances.add(n.distance);
+            n.distance.setLayoutX(n.point.x + 20);
+            n.distance.setLayoutY(n.point.y);
+            canvasGroup.getChildren().add(n.distance);
+        }
+        sourceText.setLayoutX(source.circle.point.x + 20);
+        sourceText.setLayoutY(source.circle.point.y + 10);
+        canvasGroup.getChildren().add(sourceText);
+        SequentialTransition st = new SequentialTransition();
+        source.circle.distance.setText("Dist. : " + 0);
+        //</editor-fold>
+
+        source.minDistance = 0;
+        PriorityQueue<Vertex> pq = new PriorityQueue<>();
+        pq.add(source);
+        while (!pq.isEmpty()) {
+            Vertex u = pq.poll();
+            System.out.println(u.name);
+            //<editor-fold defaultstate="collapsed" desc="Animation Control">
+            FillTransition ft = new FillTransition(Duration.millis(time), u.circle);
+            ft.setToValue(Color.CHOCOLATE);
+            st.getChildren().add(ft);
+            String str = "";
+            str = str.concat("Popped : Node(" + u.name + "), Current Distance: " + u.minDistance + "\n");
+            final String str2 = str;
+            FadeTransition fd = new FadeTransition(Duration.millis(10), textFlow);
+            fd.setOnFinished(e -> {
+                textFlow.appendText(str2);
+            });
+            fd.onFinishedProperty();
+            st.getChildren().add(fd);
+            //</editor-fold>
+            System.out.println(u.name);
+            for (Edge e : u.adjacents) {
+                if (e != null) {
+                    Vertex v = e.target;
+                    System.out.println("HERE " + v.name);
+                    if (u.minDistance + e.weight < v.minDistance) {
+                        pq.remove(v);
+                        v.minDistance = u.minDistance + e.weight;
+                        v.previous = u;
+                        pq.add(v);
+                        //<editor-fold defaultstate="collapsed" desc="Node visiting animation">
+                        //<editor-fold defaultstate="collapsed" desc="Change Edge colors">
+//                        if (undirected) {
+                            StrokeTransition ftEdge = new StrokeTransition(Duration.millis(time), e.line);
+                            ftEdge.setToValue(Color.FORESTGREEN);
+                            st.getChildren().add(ftEdge);
+//                        } else if (directed) {
+//                            FillTransition ftEdge = new FillTransition(Duration.millis(time), e.line);
+//                            ftEdge.setToValue(Color.FORESTGREEN);
+//                            st.getChildren().add(ftEdge);
+//                        }
+                        //</editor-fold>
+                        FillTransition ft1 = new FillTransition(Duration.millis(time), v.circle);
+                        ft1.setToValue(Color.FORESTGREEN);
+                        ft1.setOnFinished(ev -> {
+                            v.circle.distance.setText("Dist. : " + v.minDistance);
+                        });
+                        ft1.onFinishedProperty();
+                        st.getChildren().add(ft1);
+
+                        str = "\t";
+                        str = str.concat("Pushing : Node(" + v.name + "), (" + u.name + "--" + v.name + ") Distance : " + v.minDistance + "\n");
+                        final String str1 = str;
+                        FadeTransition fd2 = new FadeTransition(Duration.millis(10), textFlow);
+                        fd2.setOnFinished(ev -> {
+                            textFlow.appendText(str1);
+                        });
+                        fd2.onFinishedProperty();
+                        st.getChildren().add(fd2);
+                        //</editor-fold>
+                    }
+                }
+            }
+            //<editor-fold defaultstate="collapsed" desc="Animation Control">
+            FillTransition ft2 = new FillTransition(Duration.millis(time), u.circle);
+            ft2.setToValue(Color.BLUEVIOLET);
+            st.getChildren().add(ft2);
+            //</editor-fold>
+        }
+
+        //<editor-fold defaultstate="collapsed" desc="Animation Control">
+        st.setOnFinished(ev -> {
+            for (VertexFX n : circles) {
+                FillTransition ft1 = new FillTransition(Duration.millis(time), n);
+                ft1.setToValue(Color.BLACK);
+                ft1.play();
+            }
+//            if (directed) {
+                for (Shape n : edges) {
+                    n.setFill(Color.BLACK);
+                }
+//            } else if (undirected) {
+//                for (Shape n : edges) {
+//                    n.setStroke(Color.BLACK);
+//                }
+//            }
+            FillTransition ft1 = new FillTransition(Duration.millis(time), source.circle);
+            ft1.setToValue(Color.RED);
+            ft1.play();
+//            Image image = new Image(getClass().getResourceAsStream("/play_arrow_black_48x48.png"));
+//            playPauseImage.setImage(image);
+            paused = true;
+            playing = false;
+            textFlow.appendText("---Finished--\n");
+        });
+        st.onFinishedProperty();
+        st.play();
+        playing = true;
+        paused = false;
+        //</editor-fold>
     }
 
     /**

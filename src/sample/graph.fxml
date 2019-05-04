@@ -19,7 +19,91 @@
                <children>
                   <Group fx:id="canvasGroup" layoutX="297.0" onMouseClicked="#handle" onMouseDragged="#handle" onMousePressed="#handle" onMouseReleased="#handle">
                      <children>
-                        <Pane fx:id="viewer" layoutX="-6.0" onMouseClicked="#handle" onMouseDragged="#handle" onMousePressed="#handle" onMouseReleased="#handle" prefHeight="778.0" prefWidth="978.0" style="-fx-background-color: #E0E0E0;" />
+                        <Pane fx:id="viewer" layoutX="-6.0" onMouseClicked="#handle" onMouseDragged="#handle" onMousePressed="#handle" onMouseReleased="#handle" prefHeight="778.0" prefWidth="978.0" style="-fx-background-color: #E0E0E0;">
+                           <children>
+                              <HBox alignment="CENTER" layoutX="360.0" layoutY="634.0" prefHeight="100.0" prefWidth="258.0">
+                                 <children>
+                                    <JFXButton buttonType="RAISED" contentDisplay="GRAPHIC_ONLY" style="-fx-background-radius: 100;" text="Button">
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor>
+                                       <graphic>
+                                          <ImageView fitHeight="52.0" fitWidth="85.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@fast_forward_black_48x48%20-%20Copy.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                       <tooltip>
+                                          <Tooltip text="Empty Tooltip" />
+                                       </tooltip>
+                                       <HBox.margin>
+                                          <Insets right="10.0" />
+                                       </HBox.margin>
+                                    </JFXButton>
+                                    <JFXButton fx:id="playPauseButton" buttonType="RAISED" contentDisplay="GRAPHIC_ONLY" onAction="#PlayPauseHandle" style="-fx-background-radius: 100;" text="Button">
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor>
+                                       <graphic>
+                                          <ImageView fx:id="playPauseImage" fitHeight="52.0" fitWidth="85.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@play_arrow_black_48x48.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                       <tooltip>
+                                          <Tooltip text="Empty Tooltip" />
+                                       </tooltip>
+                                       <HBox.margin>
+                                          <Insets left="10.0" right="10.0" />
+                                       </HBox.margin>
+                                    </JFXButton>
+                                    <JFXButton buttonType="RAISED" contentDisplay="GRAPHIC_ONLY" style="-fx-background-radius: 100;">
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor>
+                                       <graphic>
+                                          <ImageView fitHeight="52.0" fitWidth="85.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@fast_forward_black_48x48.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                       <tooltip>
+                                          <Tooltip text="Empty Tooltip" />
+                                       </tooltip>
+                                       <HBox.margin>
+                                          <Insets left="10.0" />
+                                       </HBox.margin>
+                                    </JFXButton>
+                                 </children>
+                                 <opaqueInsets>
+                                    <Insets />
+                                 </opaqueInsets>
+                              </HBox>
+                              <HBox alignment="CENTER" layoutX="87.0" layoutY="645.0" prefHeight="78.0" prefWidth="239.0">
+                                 <children>
+                                    <JFXButton fx:id="clearButton" buttonType="RAISED" onAction="#ClearHandle" prefHeight="46.0" prefWidth="105.0" style="-fx-background-color: #21759b;" text="CLEAR" textFill="WHITE">
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor>
+                                       <HBox.margin>
+                                          <Insets right="10.0" />
+                                       </HBox.margin>
+                                    </JFXButton>
+                                    <JFXButton fx:id="resetButton" buttonType="RAISED" onAction="#ResetHandle" prefHeight="46.0" prefWidth="105.0" style="-fx-background-color: #21759b;" text="RESET" textFill="WHITE">
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor>
+                                       <HBox.margin>
+                                          <Insets left="10.0" />
+                                       </HBox.margin>
+                                    </JFXButton>
+                                 </children>
+                              </HBox>
+                              <JFXComboBox fx:id="choiceBox" focusColor="WHITE" labelFloat="true" layoutX="372.0" layoutY="386.0" prefHeight="31.0" prefWidth="160.0" promptText="Type" unFocusColor="WHITE" />
+                           </children></Pane>
                      </children>
                      <cursor>
                         <Cursor fx:constant="CROSSHAIR" />
@@ -27,7 +111,7 @@
                   </Group>
                   <AnchorPane prefHeight="783.0" prefWidth="288.0" style="-fx-background-color: #3b5999;">
                      <children>
-                        <VBox alignment="CENTER_LEFT" layoutX="16.0" layoutY="447.0" prefHeight="180.0" prefWidth="258.0">
+                        <VBox alignment="CENTER_LEFT" layoutX="15.0" layoutY="614.0" prefHeight="122.0" prefWidth="258.0">
                            <children>
                               <JFXToggleButton fx:id="addVertexButton" onAction="#AddVertexHandle" scaleX="1.3" scaleY="1.3" scaleZ="1.3" text="Add Vertex" textFill="WHITE" />
                               <JFXToggleButton id="addEdgeButton" fx:id="addEdgeButton" onAction="#AddEdgeHandle" scaleX="1.3" scaleY="1.3" scaleZ="1.3" text="Add Edge" textFill="#f8f7f7" />
@@ -39,27 +123,7 @@
                               <Insets left="50.0" />
                            </padding>
                         </VBox>
-                        <HBox alignment="CENTER" layoutX="26.0" layoutY="627.0" prefHeight="129.0" prefWidth="239.0">
-                           <children>
-                              <JFXButton fx:id="clearButton" buttonType="RAISED" onAction="#ClearHandle" prefHeight="46.0" prefWidth="105.0" style="-fx-background-color: #21759b;" text="CLEAR" textFill="WHITE">
-                                 <cursor>
-                                    <Cursor fx:constant="HAND" />
-                                 </cursor>
-                                 <HBox.margin>
-                                    <Insets right="10.0" />
-                                 </HBox.margin>
-                              </JFXButton>
-                              <JFXButton fx:id="resetButton" buttonType="RAISED" onAction="#ResetHandle" prefHeight="46.0" prefWidth="105.0" style="-fx-background-color: #21759b;" text="RESET" textFill="WHITE">
-                                 <cursor>
-                                    <Cursor fx:constant="HAND" />
-                                 </cursor>
-                                 <HBox.margin>
-                                    <Insets left="10.0" />
-                                 </HBox.margin>
-                              </JFXButton>
-                           </children>
-                        </HBox>
-                        <GridPane alignment="CENTER" layoutX="17.0" layoutY="127.0" prefHeight="298.0" prefWidth="239.0">
+                        <GridPane alignment="CENTER" layoutX="17.0" layoutY="271.0" prefHeight="289.0" prefWidth="239.0">
                            <children>
                               <Label alignment="CENTER" text="Algorithms" textFill="WHITE" GridPane.halignment="CENTER">
                                  <font>
@@ -101,67 +165,6 @@
                               <RowConstraints minHeight="10.0" prefHeight="30.0" valignment="CENTER" vgrow="SOMETIMES" />
                            </rowConstraints>
                         </GridPane>
-                        <HBox alignment="CENTER" layoutX="7.0" layoutY="14.0" prefHeight="100.0" prefWidth="258.0">
-                           <children>
-                              <JFXButton buttonType="RAISED" contentDisplay="GRAPHIC_ONLY" style="-fx-background-radius: 100;" text="Button">
-                                 <cursor>
-                                    <Cursor fx:constant="HAND" />
-                                 </cursor>
-                                 <graphic>
-                                    <ImageView fitHeight="52.0" fitWidth="85.0" pickOnBounds="true" preserveRatio="true">
-                                       <image>
-                                          <Image url="@fast_forward_black_48x48%20-%20Copy.png" />
-                                       </image>
-                                    </ImageView>
-                                 </graphic>
-                                 <tooltip>
-                                    <Tooltip text="Empty Tooltip" />
-                                 </tooltip>
-                                 <HBox.margin>
-                                    <Insets right="10.0" />
-                                 </HBox.margin>
-                              </JFXButton>
-                              <JFXButton fx:id="playPauseButton" buttonType="RAISED" contentDisplay="GRAPHIC_ONLY" onAction="#PlayPauseHandle" style="-fx-background-radius: 100;" text="Button">
-                                 <cursor>
-                                    <Cursor fx:constant="HAND" />
-                                 </cursor>
-                                 <graphic>
-                                    <ImageView fx:id="playPauseImage" fitHeight="52.0" fitWidth="85.0" pickOnBounds="true" preserveRatio="true">
-                                       <image>
-                                          <Image url="@play_arrow_black_48x48.png" />
-                                       </image>
-                                    </ImageView>
-                                 </graphic>
-                                 <tooltip>
-                                    <Tooltip text="Empty Tooltip" />
-                                 </tooltip>
-                                 <HBox.margin>
-                                    <Insets left="10.0" right="10.0" />
-                                 </HBox.margin>
-                              </JFXButton>
-                              <JFXButton buttonType="RAISED" contentDisplay="GRAPHIC_ONLY" style="-fx-background-radius: 100;">
-                                 <cursor>
-                                    <Cursor fx:constant="HAND" />
-                                 </cursor>
-                                 <graphic>
-                                    <ImageView fitHeight="52.0" fitWidth="85.0" pickOnBounds="true" preserveRatio="true">
-                                       <image>
-                                          <Image url="@fast_forward_black_48x48.png" />
-                                       </image>
-                                    </ImageView>
-                                 </graphic>
-                                 <tooltip>
-                                    <Tooltip text="Empty Tooltip" />
-                                 </tooltip>
-                                 <HBox.margin>
-                                    <Insets left="10.0" />
-                                 </HBox.margin>
-                              </JFXButton>
-                           </children>
-                           <opaqueInsets>
-                              <Insets />
-                           </opaqueInsets>
-                        </HBox>
                      </children>
                   </AnchorPane>
                </children>
