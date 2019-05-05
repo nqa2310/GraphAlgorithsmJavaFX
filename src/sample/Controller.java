@@ -79,7 +79,9 @@ public class Controller implements Initializable {
     @FXML
     private ImageView playPauseImage;
     @FXML
-    private JFXComboBox choiceBox;
+    private JFXRadioButton weightedButton;
+    @FXML
+    private JFXRadioButton unweightedButton;
 
 
     int nVertex = 0;
@@ -92,10 +94,10 @@ public class Controller implements Initializable {
     List<Shape> edges = new ArrayList<>();
     List<Label> distances = new ArrayList<>();
 
-    boolean addVertex = true, addEdge = false, calculate = false,
+    boolean addVertex = true, addEdge = false, type = false, calculate = false,
             calculated = false, playing = false, paused = false, pinned = false;
 
-    private boolean weighted = false, unweighted = true,bfs = true, dfs = true, dijkstra = true;
+    private boolean weighted = false,unweighted = true,bfs = true, dfs = true, dijkstra = true;
 
     Algorithm algo = new Algorithm();
 
@@ -105,10 +107,9 @@ public class Controller implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        choiceBox.getItems().add(new Label("Weighted"));
-        choiceBox.getItems().add(new Label("Unweighted"));
-        choiceBox.setStyle("-fx-prompt-text-fill: #ffffff;");
         System.out.println("In intit");
+        weightedButton.setUnSelectedColor(Color.WHITE);
+        unweightedButton.setUnSelectedColor(Color.WHITE);
 //        hiddenPane.setContent(canvasGroup);
 //        anchorRoot.setManaged(false);
 
@@ -116,37 +117,19 @@ public class Controller implements Initializable {
 //        viewer.prefHeightProperty().bind(border.heightProperty());
 //        viewer.prefWidthProperty().bind(border.widthProperty());
 //        AddVertexHandle(null);
+        unweightedButton.setSelected(true);
         addEdgeButton.setDisable(true);
         addVertexButton.setDisable(true);
         clearButton.setDisable(true);
-
-        if (weighted) {
-            bfsButton.setDisable(true);
-            dfsButton.setDisable(true);
-        }
-
-        if (unweighted) {
-            dijkstraButton.setDisable(true);
-        }
+        bfsButton.setDisable(true);
+        dfsButton.setDisable(true);
+        dijkstraButton.setDisable(true);
         Image image = new Image(getClass().getResourceAsStream("play_arrow_black_48x48.png"));
         playPauseImage.setImage(image);
 
 //        if (directed) {
 //            articulationPointButton.setDisable(true);
 //        }
-
-//        //Set back button action
-//        canvasBackButton.setOnAction(e -> {
-//            try {
-//                ResetHandle(null);
-//                Parent root = FXMLLoader.load(getClass().getResource("Panel1FXML.fxml"));
-//
-//                Scene scene = new Scene(root);
-//                FXSimulatorMain.primaryStage.setScene(scene);
-//            } catch (IOException ex) {
-//                Logger.getLogger(CanvasController.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-//        });
 
 //        //Setup Slider
 //        slider = new JFXSlider(10, 1000, 500);
@@ -286,8 +269,8 @@ public class Controller implements Initializable {
                     circle.setOnMouseEntered(mouseHandler);
 
                     ScaleTransition tr = new ScaleTransition(Duration.millis(100), circle);
-                    tr.setByX(10f);
-                    tr.setByY(10f);
+                    tr.setByX(13f);
+                    tr.setByY(13f);
                     tr.setInterpolator(Interpolator.EASE_OUT);
                     tr.play();
 
@@ -312,9 +295,10 @@ public class Controller implements Initializable {
                             weight = new Label();
                             System.out.println("Adding Edge");
                             //Adds the edge between two selected nodes
-                                edgeLine = new Line(selectedVertex.point.x, selectedVertex.point.y, circle.point.x, circle.point.y);
-                                canvasGroup.getChildren().add(edgeLine);
-                                edgeLine.setId("line");
+                            edgeLine = new Line(selectedVertex.point.x, selectedVertex.point.y, circle.point.x, circle.point.y);
+                            edgeLine.setStrokeWidth(2);
+                            canvasGroup.getChildren().add(edgeLine);
+                            edgeLine.setId("line");
 
                             //Adds weight between two selected nodes
                             if (weighted) {
@@ -385,7 +369,7 @@ public class Controller implements Initializable {
 //                                menuBool = false;
 //                            });
                         }
-                        if (addVertex || (calculate && !calculated) || addEdge) {
+                        if (addVertex || addEdge) {
                             selectedVertex.isSelected = false;
                             FillTransition ft1 = new FillTransition(Duration.millis(300), selectedVertex, Color.GREEN, javafx.scene.paint.Color.BLACK);
                             ft1.play();
@@ -393,11 +377,12 @@ public class Controller implements Initializable {
                         selectedVertex = null;
                         return;
                     }
-
-                    FillTransition ft = new FillTransition(Duration.millis(300), circle, javafx.scene.paint.Color.BLACK, Color.GREEN);
-                    ft.play();
-                    circle.isSelected = true;
-                    selectedVertex = circle;
+                    if(!calculate) {
+                        FillTransition ft = new FillTransition(Duration.millis(300), circle, javafx.scene.paint.Color.BLACK, Color.GREEN);
+                        ft.play();
+                        circle.isSelected = true;
+                        selectedVertex = circle;
+                    }
 
                     // WHAT TO DO WHEN SELECTED ON ACTIVE ALGORITHM
                     if (calculate && !calculated) {
@@ -407,9 +392,9 @@ public class Controller implements Initializable {
                         else if (dfs) {
                             DFS(circle.vertex);
                         }
-//                        else if (dijkstra) {
-//                            algo.newDijkstra(circle.vertex);
-//                        }
+                        else if (dijkstra) {
+                            dijkstra(circle.vertex);
+                        }
 //
                         calculated = true;
                     }
@@ -472,6 +457,8 @@ public class Controller implements Initializable {
             playPauseImage.setImage(im);
             paused = true;
             playing = false;
+            Image image1 = new javafx.scene.image.Image(getClass().getResourceAsStream("play_arrow_black_48x48.png"));
+            playPauseImage.setImage(image1);
 //            textFlow.appendText("---Finished--\n");
         });
         st.onFinishedProperty();
@@ -479,6 +466,7 @@ public class Controller implements Initializable {
         playing = true;
         paused = false;
         //</editor-fold>
+
     }
 
     private void DFSRecursion(Vertex source, int level) {
@@ -558,55 +546,61 @@ public class Controller implements Initializable {
 //        });
 //        fd.onFinishedProperty();
 //        st.getChildren().add(fd);
+
     }
 
     private void BFS(Vertex source) {
         Image image = new Image(getClass().getResourceAsStream("pause_black_48x48.png"));
         playPauseImage.setImage(image);
-                st = new SequentialTransition();
-                source.minDistance = 0;
-                source.visited = true;
-                LinkedList<Vertex> q = new LinkedList<>();
-                q.push(source);
-                while (!q.isEmpty()) {
-                    Vertex u = q.removeLast();
-                    FillTransition ft = new FillTransition(Duration.millis(time),u.circle);
-                    if (u.circle.getFill() == Color.BLACK) {
-                        ft.setToValue(Color.CHOCOLATE);
-                    }
-                    st.getChildren().add(ft);
+        st = new SequentialTransition();
+        FillTransition ftsource = new FillTransition(Duration.millis(time),source.circle);
+        if (source.circle.getFill() == Color.BLACK) {
+            ftsource.setToValue(Color.GREEN);
+        }
+        st.getChildren().add(ftsource);
+        source.minDistance = 0;
+        source.visited = true;
+        LinkedList<Vertex> q = new LinkedList<>();
+        q.push(source);
+        while (!q.isEmpty()) {
+            Vertex u = q.removeLast();
+            FillTransition ft = new FillTransition(Duration.millis(time),u.circle);
+            if (u.circle.getFill() == Color.BLACK) {
+                ft.setToValue(Color.CHOCOLATE);
+            }
+            st.getChildren().add(ft);
+            System.out.println(u.name);
+            for (Edge e: u.adjacents) {
+                if (e != null) {
+                    Vertex v = e.target;
+                    if (!v.visited) {
+                        v.minDistance = u.minDistance + 1;
+                        v.visited = true;
+                        q.push(v);
+                        v.previous = u;
 
-                    System.out.println(u.name);
-                    for (Edge e: u.adjacents) {
-                        if (e != null) {
-                            Vertex v = e.target;
-                            if (!v.visited) {
-                                v.minDistance = u.minDistance + 1;
-                                v.visited = true;
-                                q.push(v);
-                                v.previous = u;
-
-                                //Vertex visiting animation
-                                //change Edge color
-                                StrokeTransition ftEdge = new StrokeTransition(Duration.millis(time), e.line);
-                                ftEdge.setToValue(Color.FORESTGREEN);
-                                st.getChildren().add(ftEdge);
-                                FillTransition ft1 = new FillTransition(Duration.millis(time), v.circle);
-                                ft1.setToValue(Color.FORESTGREEN);
-                                ft1.setOnFinished(ev -> {
-                                    v.circle.distance.setText("Dist. : " + v.minDistance);
-                                });
-                                ft1.onFinishedProperty();
-                                st.getChildren().add(ft1);
-                            }
-                        }
+                        //change Edge color
+                        StrokeTransition ftEdge = new StrokeTransition(Duration.millis(time), e.line);
+                        ftEdge.setToValue(Color.FORESTGREEN);
+                        st.getChildren().add(ftEdge);
+                        //Vertex visiting animation
+                        FillTransition ft1 = new FillTransition(Duration.millis(time), v.circle);
+                        ft1.setToValue(Color.FORESTGREEN);
+                        ft1.setOnFinished(ev -> {
+                            v.circle.distance.setText("Dist. : " + v.minDistance);
+                        });
+                        ft1.onFinishedProperty();
+                        st.getChildren().add(ft1);
                     }
-                    FillTransition ft2 = new FillTransition(Duration.millis(time), u.circle);
-                    ft2.setToValue(Color.BLUEVIOLET);
-                    st.getChildren().add(ft2);
                 }
+            }
+            // Vertex finishing visit animation
+            FillTransition ft2 = new FillTransition(Duration.millis(time), u.circle);
+            ft2.setToValue(Color.BLUEVIOLET);
+            st.getChildren().add(ft2);
+        }
 
-                st.setOnFinished(ev -> {
+        st.setOnFinished(ev -> {
                     for (VertexFX n: circles) {
                         FillTransition ft1 = new FillTransition(Duration.millis(time),n);
                         ft1.setToValue(Color.BLACK);
@@ -624,11 +618,15 @@ public class Controller implements Initializable {
                     FillTransition ft1 = new FillTransition(Duration.millis(time), source.circle);
                     ft1.setToValue(Color.RED);
                     ft1.play();
+                    Image image1 = new javafx.scene.image.Image(getClass().getResourceAsStream("play_arrow_black_48x48.png"));
+                    playPauseImage.setImage(image1);
+                    paused = true;
+                    playing = false;
                 });
-                st.onFinishedProperty();
-                st.play();
-                playing = true;
-                paused = false;
+        st.onFinishedProperty();
+        st.play();
+        playing = true;
+        paused = false;
 
     }
 
@@ -645,7 +643,7 @@ public class Controller implements Initializable {
         sourceText.setLayoutX(source.circle.point.x + 20);
         sourceText.setLayoutY(source.circle.point.y + 10);
         canvasGroup.getChildren().add(sourceText);
-        SequentialTransition st = new SequentialTransition();
+        st = new SequentialTransition();
         source.circle.distance.setText("Dist. : " + 0);
         //</editor-fold>
 
@@ -738,8 +736,8 @@ public class Controller implements Initializable {
             FillTransition ft1 = new FillTransition(Duration.millis(time), source.circle);
             ft1.setToValue(Color.RED);
             ft1.play();
-//            Image image = new Image(getClass().getResourceAsStream("/play_arrow_black_48x48.png"));
-//            playPauseImage.setImage(image);
+            Image image1 = new javafx.scene.image.Image(getClass().getResourceAsStream("play_arrow_black_48x48.png"));
+            playPauseImage.setImage(image1);
             paused = true;
             playing = false;
             textFlow.appendText("---Finished--\n");
@@ -749,7 +747,10 @@ public class Controller implements Initializable {
         playing = true;
         paused = false;
         //</editor-fold>
+
     }
+
+
 
     /**
      * Event handler for the Play/Pause button.
@@ -784,6 +785,19 @@ public class Controller implements Initializable {
         }
     }
 
+    @FXML
+    public void WeightedHandle(ActionEvent event) {
+        unweightedButton.setSelected(false);
+        weighted = true;
+        unweighted = false;
+    }
+    @FXML
+    public void UnweightedHandle(ActionEvent event) {
+        weightedButton.setSelected(false);
+        weighted = false;
+        unweighted = true;
+    }
+
     /**
      * Event handler for the Add Edge button.
      *
@@ -794,6 +808,8 @@ public class Controller implements Initializable {
         addVertex = false;
         addEdge = true;
         calculate = false;
+        weightedButton.setDisable(true);
+        unweightedButton.setDisable(true);
         addVertexButton.setSelected(false);
         addEdgeButton.setSelected(true);
 
@@ -809,6 +825,11 @@ public class Controller implements Initializable {
         }
     }
 
+    /**
+     * Event handler for the Add Vertex button.
+     *
+     * @param event
+     */
     @FXML
     public void AddVertexHandle(ActionEvent event) {
         addVertex = true;
@@ -834,10 +855,13 @@ public class Controller implements Initializable {
     public void BFSHandle(ActionEvent event) {
         addVertex = false;
         addEdge = false;
+        weightedButton.setDisable(true);
+        unweightedButton.setDisable(true);
         addVertexButton.setSelected(false);
         addEdgeButton.setSelected(false);
         addVertexButton.setDisable(true);
         addEdgeButton.setDisable(true);
+        playPauseButton.setDisable(false);
         calculate = true;
         clearButton.setDisable(false);
         bfs = true;
@@ -851,10 +875,13 @@ public class Controller implements Initializable {
     public void DFSHandle(ActionEvent event) {
         addVertex = false;
         addEdge = false;
+        weightedButton.setDisable(true);
+        unweightedButton.setDisable(true);
         addVertexButton.setSelected(false);
         addEdgeButton.setSelected(false);
         addVertexButton.setDisable(true);
         addEdgeButton.setDisable(true);
+        playPauseButton.setDisable(false);
         calculate = true;
         clearButton.setDisable(false);
         dfs = true;
@@ -868,10 +895,13 @@ public class Controller implements Initializable {
     public void DijkstraHandle(ActionEvent event) {
         addVertex = false;
         addEdge = false;
+        weightedButton.setDisable(true);
+        unweightedButton.setDisable(true);
         addVertexButton.setSelected(false);
         addEdgeButton.setSelected(false);
         addVertexButton.setDisable(true);
         addEdgeButton.setDisable(true);
+        playPauseButton.setDisable(false);
         calculate = true;
         clearButton.setDisable(false);
         bfs = false;
@@ -906,15 +936,17 @@ public class Controller implements Initializable {
         addEdgeButton.setSelected(false);
         addEdgeButton.setDisable(true);
         addVertexButton.setDisable(false);
+        weightedButton.setDisable(false);
+        unweightedButton.setDisable(false);
         clearButton.setDisable(true);
 //        algo = new Algorithm();
         javafx.scene.image.Image image = new javafx.scene.image.Image(getClass().getResourceAsStream("play_arrow_black_48x48.png"));
         playPauseImage.setImage(image);
-//        hiddenPane.setPinnedSide(null);
 
         bfsButton.setDisable(true);
         dfsButton.setDisable(true);
         dijkstraButton.setDisable(true);
+        playPauseButton.setDisable(true);
         playing = false;
         paused = false;
     }
@@ -956,11 +988,11 @@ public class Controller implements Initializable {
 //                ftEdge.play();
 //            }
         }
-//        canvasGroup.getChildren().remove(sourceText);
-//        for (Label x : distances) {
-//            x.setText("Distance : INFINITY");
-//            canvasGroup.getChildren().remove(x);
-//        }
+        canvasGroup.getChildren().remove(sourceText);
+        for (Label x : distances) {
+            x.setText("Distance : INFINITY");
+            canvasGroup.getChildren().remove(x);
+        }
 //        for (Label x : visitTime) {
 //            x.setText("Visit : 0");
 //            canvasGroup.getChildren().remove(x);
@@ -1005,9 +1037,10 @@ public class Controller implements Initializable {
             vertex = new Vertex(name, this);
             point = new Point((int) x, (int) y);
             id = new Label(name);
+            id.setFont(Font.font(20));
             canvasGroup.getChildren().add(id);
-            id.setLayoutX(x - 18);
-            id.setLayoutY(y - 18);
+            id.setLayoutX(x-27);
+            id.setLayoutY(y-27);
             this.setOpacity(0.5);
             this.setBlendMode(BlendMode.MULTIPLY);
             this.setId("vertex");
