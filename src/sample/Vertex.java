@@ -9,7 +9,7 @@ public class Vertex implements Comparable<Vertex>{
     public List<Edge> adjacents = new ArrayList<Edge>();
     public List<Edge> revAdjacents = new ArrayList<Edge>();
     public Vertex previous;
-    public Controller.VertexFX circle;
+    public VertexCircle circle;
     public double minDistance = Double.POSITIVE_INFINITY;
     public boolean visited, isArticulationPoint;
     public int visitTime = 0, lowTime = 0;
@@ -24,7 +24,7 @@ public class Vertex implements Comparable<Vertex>{
         this.visited = false;
     }
 
-    public Vertex(String name, Controller.VertexFX c) {
+    public Vertex(String name, VertexCircle c) {
         this.name = name;
         this.circle = c;
         this.visited = false;
