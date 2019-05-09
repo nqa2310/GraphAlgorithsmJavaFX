@@ -1,5 +1,6 @@
-package sample;
+package graph;
 
+import graph.Vertex;
 import javafx.scene.control.Label;
 import javafx.scene.shape.Shape;
 

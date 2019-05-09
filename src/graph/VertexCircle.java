@@ -1,4 +1,4 @@
-package sample;
+package graph;
 
 import javafx.scene.Cursor;
 import javafx.scene.Group;
@@ -11,13 +11,13 @@ import java.awt.*;
 import java.util.List;
 
 public class VertexCircle extends Circle {
-    Vertex vertex;
-    Point point;
-    javafx.scene.control.Label distance = new javafx.scene.control.Label("Dist. : INFINITY");
-    javafx.scene.control.Label visitTime = new javafx.scene.control.Label("Visit : 0");
-    javafx.scene.control.Label lowTime = new javafx.scene.control.Label("Low : 0");
-    javafx.scene.control.Label id;
-    boolean isSelected = false;
+    public Vertex vertex;
+    public Point point;
+    public javafx.scene.control.Label distance = new javafx.scene.control.Label("Dist. : INFINITY");
+    public javafx.scene.control.Label visitTime = new javafx.scene.control.Label("Visit : 0");
+    public javafx.scene.control.Label lowTime = new javafx.scene.control.Label("Low : 0");
+    public javafx.scene.control.Label id;
+    public boolean isSelected = false;
 
     public VertexCircle(double x, double y, double rad, String name, Group canvasGroup, List<VertexCircle> circles) {
         super(x, y, rad);

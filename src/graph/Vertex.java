@@ -1,4 +1,4 @@
-package sample;
+package graph;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,7 @@ public class Vertex implements Comparable<Vertex>{
     public Vertex previous;
     public VertexCircle circle;
     public double minDistance = Double.POSITIVE_INFINITY;
-    public boolean visited, isArticulationPoint;
+    public boolean visited;
     public int visitTime = 0, lowTime = 0;
     public int DAGColor;
 
