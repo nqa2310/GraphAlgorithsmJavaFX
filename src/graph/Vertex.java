@@ -7,7 +7,6 @@ public class Vertex implements Comparable<Vertex>{
 
     public String name;
     public List<Edge> adjacents = new ArrayList<Edge>();
-    public List<Edge> revAdjacents = new ArrayList<Edge>();
     public Vertex previous;
     public VertexCircle circle;
     public double minDistance = Double.POSITIVE_INFINITY;

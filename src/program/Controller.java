@@ -2,6 +2,7 @@ package program;
 
 import com.jfoenix.controls.*;
 import graph.Edge;
+import graph.EdgeArrow;
 import graph.Vertex;
 import graph.VertexCircle;
 import javafx.animation.*;
@@ -63,13 +64,17 @@ public class Controller implements Initializable {
     @FXML
     private JFXNodesList nodeList;
     @FXML
-    private JFXSlider slider = new JFXSlider();
+    private JFXSlider slider;
     @FXML
     private ImageView playPauseImage;
     @FXML
     private JFXRadioButton weightedButton;
     @FXML
     private JFXRadioButton unweightedButton;
+    @FXML
+    private JFXRadioButton directedButton;
+    @FXML
+    private JFXRadioButton undirectedButton;
 
 
     int nVertex = 0;
@@ -79,6 +84,8 @@ public class Controller implements Initializable {
 
     VertexCircle source = null;
 
+    EdgeArrow arrow;
+
     List<VertexCircle> circles = new ArrayList<>();
     List<Edge> realEdges = new ArrayList<>();
     List<Shape> edges = new ArrayList<>();
@@ -87,13 +94,13 @@ public class Controller implements Initializable {
     boolean addVertex = true, addEdge = false, calculate = false,
             calculated = false, playing = false, paused = false;
 
-    private boolean weighted = false,unweighted = true,directed = false, undirected = true,bfs = true, dfs = true, dijkstra = true;
+    private boolean weighted = false,unweighted = true,directed = true, undirected = false,bfs = true, dfs = true, dijkstra = true;
 
-    Algorithm algo = new Algorithm();
+    Algorithm algo = new Algorithm() ;
 
     public static TextArea textFlow = new TextArea();
 
-    public SequentialTransition st;
+    public SequentialTransition animations ;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -131,15 +138,6 @@ public class Controller implements Initializable {
 //        nodeList.toFront();
 //        slider.valueProperty().addListener(this);
 
-//        //Set Label "Detail"
-//        Label detailLabel = new Label("Detail");
-//        detailLabel.setPrefSize(hiddenRoot.getPrefWidth() - 20, 38);
-//        detailLabel.setAlignment(Pos.CENTER);
-//        detailLabel.setFont(new Font("Roboto", 20));
-//        detailLabel.setPadding(new javafx.geometry.Insets(7, 40, 3, -10));
-//        detailLabel.setStyle("-fx-background-color: #dcdde1;");
-//        detailLabel.setLayoutX(35);
-//
 //        //Set TextFlow pane properties
 //        textFlow.setPrefSize(hiddenRoot.getPrefWidth(), hiddenRoot.getPrefHeight() - 2);
 ////        textFlow.prefHeightProperty().bind(hiddenRoot.heightProperty());
@@ -189,7 +187,9 @@ public class Controller implements Initializable {
             if (!ev.getSource().equals(canvasGroup)) {
                 if (ev.getEventType() == MouseEvent.MOUSE_RELEASED && ev.getButton() == MouseButton.PRIMARY) {
                     nVertex++;
-                    VertexCircle circle = new VertexCircle(ev.getX(), ev.getY(), 1.2, String.valueOf(nVertex),canvasGroup,circles);
+                    VertexCircle circle = new VertexCircle(ev.getX(), ev.getY(), 1.3, String.valueOf(nVertex),canvasGroup,circles);
+//                    circle.circlePane.getChildren().add(circle);
+//                    circle.circlePane.getChildren().add(circle.id);
                     canvasGroup.getChildren().add(circle);
 
                     circle.setOnMousePressed(mouseHandler);
@@ -199,8 +199,8 @@ public class Controller implements Initializable {
                     circle.setOnMouseEntered(mouseHandler);
 
                     ScaleTransition tr = new ScaleTransition(Duration.millis(100), circle);
-                    tr.setByX(13f);
-                    tr.setByY(13f);
+                    tr.setByX(15f);
+                    tr.setByY(15f);
                     tr.setInterpolator(Interpolator.EASE_OUT);
                     tr.play();
 
@@ -225,11 +225,19 @@ public class Controller implements Initializable {
                             weight = new Label();
                             System.out.println("Adding Edge");
                             //Adds the edge between two selected nodes
-                            edgeLine = new Line(selectedVertex.point.x, selectedVertex.point.y, circle.point.x, circle.point.y);
-                            edgeLine.setStrokeWidth(2);
-                            canvasGroup.getChildren().add(edgeLine);
-                            edgeLine.setId("line");
-                            edgeLine.setCursor(Cursor.DEFAULT);
+                            if (undirected) {
+                                edgeLine = new Line(selectedVertex.point.x, selectedVertex.point.y, circle.point.x, circle.point.y);
+                                edgeLine.setStrokeWidth(2);
+                                canvasGroup.getChildren().add(edgeLine);
+                                edgeLine.setId("line");
+                                edgeLine.setCursor(Cursor.DEFAULT);
+                            } else if (directed) {
+                                arrow = new EdgeArrow(selectedVertex.point.x, selectedVertex.point.y, circle.point.x, circle.point.y);
+                                canvasGroup.getChildren().add(arrow);
+                                arrow.setId("arrow");
+                                arrow.setCursor(Cursor.DEFAULT);
+                                arrow.setStrokeWidth(2);
+                            }
 
                             //Adds weight between two selected nodes
                             if (weighted) {
@@ -251,29 +259,21 @@ public class Controller implements Initializable {
                             } else if (unweighted) {
                                 weight.setText("1");
                             }
-//                            javafx.scene.shape.Shape line_arrow = null;
-//                            Edge temp = null;
-//                            if (undirected) {
-//                                temp = new Edge(selectedNode.node, circle.node, Integer.valueOf(weight.getText()), edgeLine, weight);
-//                                if (weighted) {
-//                                    mstEdges.add(temp);
-//                                }
-//
+
+                            Edge temp = null;
+                            if (undirected) {
                                 selectedVertex.vertex.adjacents.add(new Edge(selectedVertex.vertex, circle.vertex, Double.valueOf(weight.getText()), edgeLine, weight));
                                 circle.vertex.adjacents.add(new Edge(circle.vertex, selectedVertex.vertex, Double.valueOf(weight.getText()), edgeLine, weight));
                                 edges.add(edgeLine);
                                 realEdges.add(selectedVertex.vertex.adjacents.get(selectedVertex.vertex.adjacents.size() - 1));
                                 realEdges.add(circle.vertex.adjacents.get(circle.vertex.adjacents.size() - 1));
-//                                line_arrow = edgeLine;
-//
-//                            } else if (directed) {
-//                                temp = new Edge(selectedNode.node, circle.node, Double.valueOf(weight.getText()), arrow, weight);
-//                                selectedNode.node.adjacents.add(temp);
-////                                circle.node.revAdjacents.add(new Edge(circle.node, selectedNode.node, Integer.valueOf(weight.getText()), arrow));
-//                                edges.add(arrow);
-//                                line_arrow = arrow;
-//                                realEdges.add(temp);
-//                            }
+
+                            } else if (directed) {
+                                temp = new Edge(selectedVertex.vertex, circle.vertex, Double.valueOf(weight.getText()), arrow, weight);
+                                selectedVertex.vertex.adjacents.add(temp);
+                                edges.add(arrow);
+                                realEdges.add(temp);
+                            }
                         }
                         if (addVertex || addEdge) {
                             selectedVertex.isSelected = false;
@@ -297,23 +297,23 @@ public class Controller implements Initializable {
                             ft1.setToValue(Color.RED);
                             ft1.play();
                             source = circle;
-                            algo.BFS(circle.vertex);
+                            algo.BFS(source.vertex);
                         }
                         else if (dfs) {
                             FillTransition ft1 = new FillTransition(Duration.millis(time), circle.vertex.circle);
                             ft1.setToValue(Color.RED);
                             ft1.play();
                             source = circle;
-                            algo.DFS(circle.vertex);
+                            algo.DFS(source.vertex);
                         }
                         else if (dijkstra) {
                             FillTransition ft1 = new FillTransition(Duration.millis(time), circle.vertex.circle);
                             ft1.setToValue(Color.RED);
                             ft1.play();
                             source = circle;
-                            algo.dijkstra(circle.vertex);
+                            algo.Dijkstra(source.vertex);
                         }
-//
+
                         calculated = true;
                     }
                     else if (calculate && calculated) {
@@ -343,6 +343,13 @@ public class Controller implements Initializable {
 
     };
 
+    @FXML
+    public void SpeedHandle(MouseEvent event) {
+        int temp = (int)slider.getValue();
+        time = temp;
+        System.out.println(time);
+    }
+
     /**
      * Event handler for the Play/Pause button.
      *
@@ -351,21 +358,21 @@ public class Controller implements Initializable {
     @FXML
     public void PlayPauseHandle(ActionEvent event) {
         try{
-            if (playing && st != null && st.getStatus() == Animation.Status.RUNNING) {
+            if (playing && animations != null && animations.getStatus() == Animation.Status.RUNNING) {
                 Image image = new Image(getClass().getResourceAsStream("play_arrow_black_48x48.png"));
                 playPauseImage.setImage(image);
                 System.out.println("PAUSED");
-                st.pause();
+                animations.pause();
                 paused = true;
                 playing = false;
                 return;
-            } else if (paused && st != null) {
+            } else if (paused && animations != null) {
                 Image image = new Image(getClass().getResourceAsStream("pause_black_48x48.png"));
                 playPauseImage.setImage(image);
-                if(st.getStatus() == Animation.Status.PAUSED)
-                    st.play();
-                else if(st.getStatus() == Animation.Status.STOPPED)
-                    st.playFromStart();
+                if(animations.getStatus() == Animation.Status.PAUSED)
+                    animations.play();
+                else if(animations.getStatus() == Animation.Status.STOPPED)
+                    animations.playFromStart();
                 playing = true;
                 paused = false;
                 return;
@@ -375,13 +382,26 @@ public class Controller implements Initializable {
                     paused = false;
                     Image image = new Image(getClass().getResourceAsStream("pause_black_48x48.png"));
                     playPauseImage.setImage(image);
-                    algo.finishAnimation(st,source.vertex);
+                    algo.finishAnimation(source.vertex);
                 }
             }
         } catch(Exception e){
             System.out.println("Error while play/pause: " + e);
             ClearHandle(null);
         }
+    }
+
+    @FXML
+    public void DirectedHandle(ActionEvent event) {
+        undirectedButton.setSelected(false);
+        directed = true;
+        undirected = false;
+    }
+    @FXML
+    public void UndirectedHandle(ActionEvent event) {
+        directedButton.setSelected(false);
+        undirected = true;
+        directed = false;
     }
 
     @FXML
@@ -520,6 +540,7 @@ public class Controller implements Initializable {
     public void ResetHandle(ActionEvent event) {
         ClearHandle(null);
         nVertex = 0;
+        time = 500;
         canvasGroup.getChildren().clear();
         canvasGroup.getChildren().addAll(viewer);
         selectedVertex = null;
@@ -531,6 +552,7 @@ public class Controller implements Initializable {
         addEdge = false;
         calculate = false;
         calculated = false;
+        slider.setDisable(false);
         addVertexButton.setSelected(true);
         addEdgeButton.setSelected(false);
         addEdgeButton.setDisable(true);
@@ -539,9 +561,8 @@ public class Controller implements Initializable {
         unweightedButton.setDisable(false);
         clearButton.setDisable(true);
         algo = new Algorithm();
-        javafx.scene.image.Image image = new javafx.scene.image.Image(getClass().getResourceAsStream("play_arrow_black_48x48.png"));
+        Image image = new Image(getClass().getResourceAsStream("play_arrow_black_48x48.png"));
         playPauseImage.setImage(image);
-
         bfsButton.setDisable(true);
         dfsButton.setDisable(true);
         dijkstraButton.setDisable(true);
@@ -558,9 +579,9 @@ public class Controller implements Initializable {
      */
     @FXML
     public void ClearHandle(ActionEvent event) {
-        if(st != null && st.getStatus() != Animation.Status.STOPPED)
-            st.stop();
-        if(st != null) st.getChildren().clear();
+        if(animations != null && animations.getStatus() != Animation.Status.STOPPED)
+            animations.stop();
+        if(animations != null) animations.getChildren().clear();
         selectedVertex = null;
         calculated = false;
         System.out.println("CLEAR:" + circles.size());
@@ -601,7 +622,7 @@ public class Controller implements Initializable {
 //        }
 //        textFlow.clear();
 //
-        javafx.scene.image.Image image = new Image(getClass().getResourceAsStream("play_arrow_black_48x48.png"));
+        Image image = new Image(getClass().getResourceAsStream("play_arrow_black_48x48.png"));
         playPauseImage.setImage(image);
 //
         distances = new ArrayList<>();
@@ -620,16 +641,16 @@ public class Controller implements Initializable {
     @FXML
     public void ForwardHandle(ActionEvent event) {
         try{
-            if (paused && st != null) {
-                if(st.getStatus() == Animation.Status.PAUSED) {
-                    st.jumpTo(st.getCurrentTime().add(Duration.millis(time)));
+            if (paused && animations != null) {
+                if(animations.getStatus() == Animation.Status.PAUSED) {
+                    animations.jumpTo(animations.getCurrentTime().add(Duration.millis(time)));
                 }
                 playing = false;
                 paused = true;
                 return;
-            } else if (!paused && !playing && st != null) {
-                algo.finishAnimation(st,source.vertex);
-                st.pause();
+            } else if (!paused && !playing && animations != null) {
+                algo.finishAnimation(source.vertex);
+                animations.pause();
                 playing = false;
                 paused = true;
                 return;
@@ -642,12 +663,15 @@ public class Controller implements Initializable {
     @FXML
     public void BackHandle(ActionEvent event) {
         try{
-            if (st != null) {
-                if(st.getStatus() == Animation.Status.PAUSED) {
-                    st.jumpTo(st.getCurrentTime().subtract(Duration.millis(time)));
+            if (animations != null) {
+                if(animations.getStatus() == Animation.Status.PAUSED) {
+                    animations.jumpTo(animations.getCurrentTime().subtract(Duration.millis(time)));
                 }
-                else if(st.getStatus() == Animation.Status.STOPPED) {
-                    st.jumpTo(st.getCurrentTime().subtract(Duration.millis(time)));
+                else if(animations.getStatus() == Animation.Status.STOPPED) {
+                    animations.playFromStart();
+                    animations.pause();
+                    animations.jumpTo(animations.getTotalDuration());
+                    animations.jumpTo(animations.getCurrentTime().subtract(Duration.millis(time)));
                 }
                 playing = false;
                 paused = true;
@@ -661,13 +685,8 @@ public class Controller implements Initializable {
     @FXML
     public void FinishHandle(ActionEvent event) {
         try{
-            if (paused && st != null) {
-                if(st.getStatus() == Animation.Status.PAUSED) {
-                    st.jumpTo(st.getTotalDuration());
-                }
-                else if(st.getStatus() == Animation.Status.STOPPED) {
-                    st.jumpTo(st.getTotalDuration());
-                }
+            if (paused && animations != null) {
+                animations.jumpTo(animations.getTotalDuration());
                 playing = false;
                 paused = true;
                 return;
@@ -680,9 +699,9 @@ public class Controller implements Initializable {
     @FXML
     public void BeginHandle(ActionEvent event) {
         try{
-            if (paused && st != null) {
-                if(st.getStatus() == Animation.Status.PAUSED) {
-                    st.jumpTo(st.getTotalDuration().subtract(st.getTotalDuration()));
+            if (paused && animations != null) {
+                if(animations.getStatus() == Animation.Status.PAUSED) {
+                    animations.jumpTo(animations.getTotalDuration().subtract(animations.getTotalDuration()));
                 }
                 playing = false;
                 paused = true;
@@ -694,20 +713,21 @@ public class Controller implements Initializable {
     }
 
     public class Algorithm {
+        LinkedList<Vertex> list;
 
         public Algorithm() {
+            animations = new SequentialTransition();
+            list = new LinkedList<>();
         }
 
-        private void BFS(Vertex source) {
-            st = new SequentialTransition();
-            changeVertexColor(st,source,Color.FORESTGREEN);
+        public void BFS(Vertex source) {
+            changeVertexColor(source, Color.FORESTGREEN);
             source.minDistance = 0;
             source.visited = true;
-            LinkedList<Vertex> q = new LinkedList<>();
-            q.push(source);
-            while (!q.isEmpty()) {
-                Vertex u = q.removeLast();
-                changeVertexColor(st,u,Color.CHOCOLATE);
+            list.push(source);
+            while (!list.isEmpty()) {
+                Vertex u = list.removeLast();
+                changeVertexColor(u,Color.CHOCOLATE);
                 System.out.println(u.name);
                 for (Edge e: u.adjacents) {
                     if (e != null) {
@@ -715,41 +735,29 @@ public class Controller implements Initializable {
                         if (!v.visited) {
                             v.minDistance = u.minDistance + 1;
                             v.visited = true;
-                            q.push(v);
+                            list.push(v);
                             v.previous = u;
 
-                            changeEdgeColor(st,e,Color.FORESTGREEN);
-                            FillTransition ft1 = new FillTransition(Duration.millis(time), v.circle);
-                            ft1.setToValue(Color.FORESTGREEN);
-                            ft1.setOnFinished(ev -> {
-                                v.circle.distance.setText("Dist. : " + v.minDistance);
-                            });
-                            ft1.onFinishedProperty();
-                            st.getChildren().add(ft1);
+                            changeEdgeColor(e,Color.FORESTGREEN);
+                            VertexVisitingFinish(v,Color.FORESTGREEN);
                         }
                     }
                 }
-                // Vertex finishing visit animation
-                changeVertexColor(st,u,Color.BLUEVIOLET);
+                changeVertexColor(u,Color.BLUEVIOLET);
             }
 
         }
-        private void DFS(Vertex source) {
-            st = new SequentialTransition();
+
+        public void DFS(Vertex source) {
             source.minDistance = 0;
             source.visited = true;
-            LinkedList<Vertex> s = new LinkedList<>();
-            s.push(source);
+            list.push(source);
             DFSRecursion(source,0);
         }
 
-        private void DFSRecursion(Vertex source, int level) {
+        public void DFSRecursion(Vertex source, int level) {
             //<editor-fold defaultstate="collapsed" desc="Animation Control">
-            FillTransition ft = new FillTransition(Duration.millis(time), source.circle);
-            if (source.circle.getFill() == Color.BLACK) {
-                ft.setToValue(Color.FORESTGREEN);
-            }
-            st.getChildren().add(ft);
+            changeVertexColor(source,Color.FORESTGREEN);
 //
 //        String str = "";
 //        for (int i = 0; i < level; i++) {
@@ -762,7 +770,7 @@ public class Controller implements Initializable {
 //            textFlow.appendText(str2);
 //        });
 //        fd.onFinishedProperty();
-//        st.getChildren().add(fd);
+//        animations.getChildren().add(fd);
             //</editor-fold>
             for (Edge e : source.adjacents) {
                 if (e != null) {
@@ -772,17 +780,11 @@ public class Controller implements Initializable {
                         v.visited = true;
                         v.previous = source;
                         v.circle.distance.setText("Dist. : " + v.minDistance);
-                        changeEdgeColor(st,e,Color.FORESTGREEN);
+                        changeEdgeColor(e,Color.FORESTGREEN);
                         DFSRecursion(v, level + 1);
 
-                        FillTransition ft1 = new FillTransition(Duration.millis(time), v.circle);
-                        ft1.setToValue(Color.BLUEVIOLET);
-                        ft1.onFinishedProperty();
-                        ft1.setOnFinished(ev -> {
-                            v.circle.distance.setText("Dist. : " + v.minDistance);
-                        });
-                        st.getChildren().add(ft1);
-                        changeEdgeColor(st,e,Color.BLUEVIOLET);
+                        VertexVisitingFinish(v,Color.BLUEVIOLET);
+                        changeEdgeColor(e,Color.BLUEVIOLET);
                     }
                 }
             }
@@ -797,10 +799,11 @@ public class Controller implements Initializable {
 //            textFlow.appendText(str1);
 //        });
 //        fd.onFinishedProperty();
-//        st.getChildren().add(fd);
+//        animations.getChildren().add(fd);
 
         }
-        private void dijkstra(Vertex source) {
+
+        public void Dijkstra(Vertex source) {
             //<editor-fold defaultstate="collapsed" desc="Animation Control">
             for (VertexCircle n : circles) {
                 distances.add(n.distance);
@@ -811,26 +814,24 @@ public class Controller implements Initializable {
             sourceText.setLayoutX(source.circle.point.x + 20);
             sourceText.setLayoutY(source.circle.point.y + 10);
             canvasGroup.getChildren().add(sourceText);
-            st = new SequentialTransition();
             source.circle.distance.setText("Dist. : " + 0);
             //</editor-fold>
             source.minDistance = 0;
-            PriorityQueue<Vertex> pq = new PriorityQueue<>();
-            pq.add(source);
-            while (!pq.isEmpty()) {
-                Vertex u = pq.poll();
+            list.push(source);
+            while (!list.isEmpty()) {
+                Vertex u = list.removeFirst();
                 System.out.println(u.name);
                 //<editor-fold defaultstate="collapsed" desc="Animation Control">
-                changeVertexColor(st,u,Color.CHOCOLATE);
-                String str = "";
-                str = str.concat("Popped : Node(" + u.name + "), Current Distance: " + u.minDistance + "\n");
-                final String str2 = str;
-                FadeTransition fd = new FadeTransition(Duration.millis(10), textFlow);
-                fd.setOnFinished(e -> {
-                    textFlow.appendText(str2);
-                });
-                fd.onFinishedProperty();
-                st.getChildren().add(fd);
+                changeVertexColor(u, Color.CHOCOLATE);
+//                String str = "";
+//                str = str.concat("Popped : Node(" + u.name + "), Current Distance: " + u.minDistance + "\n");
+//                final String str2 = str;
+//                FadeTransition fd = new FadeTransition(Duration.millis(10), textFlow);
+//                fd.setOnFinished(e -> {
+//                    textFlow.appendText(str2);
+//                });
+//                fd.onFinishedProperty();
+//                animations.getChildren().add(fd);
                 //</editor-fold>
                 System.out.println(u.name);
                 for (Edge e : u.adjacents) {
@@ -838,40 +839,34 @@ public class Controller implements Initializable {
                         Vertex v = e.target;
                         System.out.println("HERE " + v.name);
                         if (u.minDistance + e.weight < v.minDistance) {
-                            pq.remove(v);
+                            list.remove(v);
                             v.minDistance = u.minDistance + e.weight;
                             v.previous = u;
-                            pq.add(v);
+                            list.push(v);
                             //<editor-fold defaultstate="collapsed" desc="Node visiting animation">
-                            changeEdgeColor(st,e,Color.FORESTGREEN);
+                            changeEdgeColor(e,Color.FORESTGREEN);
                             //</editor-fold>
-                            FillTransition ft1 = new FillTransition(Duration.millis(time), v.circle);
-                            ft1.setToValue(Color.FORESTGREEN);
-                            ft1.setOnFinished(ev -> {
-                                v.circle.distance.setText("Dist. : " + v.minDistance);
-                            });
-                            ft1.onFinishedProperty();
-                            st.getChildren().add(ft1);
+                            VertexVisitingFinish(v,Color.FORESTGREEN);
 
-                            str = "\t";
-                            str = str.concat("Pushing : Node(" + v.name + "), (" + u.name + "--" + v.name + ") Distance : " + v.minDistance + "\n");
-                            final String str1 = str;
-                            FadeTransition fd2 = new FadeTransition(Duration.millis(10), textFlow);
-                            fd2.setOnFinished(ev -> {
-                                textFlow.appendText(str1);
-                            });
-                            fd2.onFinishedProperty();
-                            st.getChildren().add(fd2);
+//                            str = "\t";
+//                            str = str.concat("Pushing : Node(" + v.name + "), (" + u.name + "--" + v.name + ") Distance : " + v.minDistance + "\n");
+//                            final String str1 = str;
+//                            FadeTransition fd2 = new FadeTransition(Duration.millis(10), textFlow);
+//                            fd2.setOnFinished(ev -> {
+//                                textFlow.appendText(str1);
+//                            });
+//                            fd2.onFinishedProperty();
+//                            animations.getChildren().add(fd2);
                             //</editor-fold>
                         }
                     }
                 }
-                changeVertexColor(st,u,Color.BLUEVIOLET);
+                changeVertexColor(u,Color.BLUEVIOLET);
             }
         }
 
-        private void finishAnimation(SequentialTransition st, Vertex source) {
-            st.setOnFinished(ev -> {
+        public void finishAnimation(Vertex source) {
+            animations.setOnFinished(ev -> {
                 for (VertexCircle n : circles) {
                     FillTransition ft1 = new FillTransition(Duration.millis(time), n);
                     ft1.setToValue(Color.BLACK);
@@ -895,41 +890,49 @@ public class Controller implements Initializable {
                 playing = false;
                 textFlow.appendText("---Finished--\n");
             });
-            st.onFinishedProperty();
-            st.play();
+            animations.onFinishedProperty();
+            animations.play();
             playing = true;
             paused = false;
         }
 
-        private void changeEdgeColor(SequentialTransition st, Edge e, Color color) {
+        public void changeEdgeColor( Edge e, Color color) {
             if (undirected) {
                 StrokeTransition ftEdge = new StrokeTransition(Duration.millis(time), e.line);
-                ftEdge.setToValue(color);
-                st.getChildren().add(ftEdge);
+                ftEdge.setToValue(Color.FORESTGREEN);
+                animations.getChildren().add(ftEdge);
             } else if (directed) {
                 FillTransition ftEdge = new FillTransition(Duration.millis(time), e.line);
-                ftEdge.setToValue(color);
-                st.getChildren().add(ftEdge);
+                ftEdge.setToValue(Color.FORESTGREEN);
+                animations.getChildren().add(ftEdge);
             }
+
         }
 
-        private void changeVertexColor(SequentialTransition st, Vertex v, Color color) {
-            FillTransition ft = new FillTransition(Duration.millis(time),v.circle);
-            if (v.circle.getFill() == Color.BLACK) {
-                ft.setToValue(color);
-            }
-            st.getChildren().add(ft);
+        public void changeVertexColor( Vertex v, Color color) {
+            FillTransition ftVertex = new FillTransition(Duration.millis(time),v.circle);
+            ftVertex.setToValue(color);
+            animations.getChildren().add(ftVertex);
+        }
+
+        public void VertexVisitingFinish(Vertex v, Color color) {
+            FillTransition ft = new FillTransition(Duration.millis(time), v.circle);
+            ft.setToValue(color);
+            ft.setOnFinished(ev -> {
+                v.circle.distance.setText("Dist. : " + v.minDistance);
+            });
+            ft.onFinishedProperty();
+            animations.getChildren().add(ft);
         }
 
         public List<Vertex> getShortestPathTo(Vertex target) {
-            List<Vertex> path = new ArrayList<>();
+            List<Vertex> shortestPath = new ArrayList<>();
             for (Vertex i = target; i != null; i = i.previous) {
-                path.add(i);
+                shortestPath.add(i);
             }
-            Collections.reverse(path);
-            return path;
+            Collections.reverse(shortestPath);
+            return shortestPath;
         }
-
     }
 
 }
