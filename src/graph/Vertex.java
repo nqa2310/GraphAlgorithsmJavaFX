@@ -6,13 +6,11 @@ import java.util.List;
 public class Vertex implements Comparable<Vertex>{
 
     public String name;
-    public List<Edge> adjacents = new ArrayList<Edge>();
+    public List<Edge> adjacents = new ArrayList<>();
     public Vertex previous;
     public VertexCircle circle;
     public double minDistance = Double.POSITIVE_INFINITY;
     public boolean visited;
-    public int visitTime = 0, lowTime = 0;
-    public int DAGColor;
 
     public Vertex() {
 

@@ -34,10 +34,6 @@ import java.util.List;
 public class Controller implements Initializable {
 
     @FXML
-    private AnchorPane anchorRoot;
-    @FXML
-    private StackPane stackRoot;
-    @FXML
     private JFXButton clearButton;
     @FXML
     private JFXButton resetButton;
@@ -94,7 +90,7 @@ public class Controller implements Initializable {
     boolean addVertex = true, addEdge = false, calculate = false,
             calculated = false, playing = false, paused = false;
 
-    private boolean weighted = false,unweighted = true,directed = true, undirected = false,bfs = true, dfs = true, dijkstra = true;
+    private boolean weighted = false,unweighted = true,directed = false, undirected = true,bfs = true, dfs = true, dijkstra = true;
 
     Algorithm algo = new Algorithm() ;
 
@@ -107,11 +103,9 @@ public class Controller implements Initializable {
         System.out.println("In intit");
         weightedButton.setUnSelectedColor(Color.BLACK);
         unweightedButton.setUnSelectedColor(Color.BLACK);
-//        anchorRoot.setManaged(false);
 
         ResetHandle(null);
-//        viewer.prefHeightProperty().bind(border.heightProperty());
-//        viewer.prefWidthProperty().bind(border.widthProperty());
+        undirectedButton.setSelected(true);
         unweightedButton.setSelected(true);
         addEdgeButton.setDisable(true);
         addVertexButton.setDisable(true);
@@ -121,22 +115,6 @@ public class Controller implements Initializable {
         dijkstraButton.setDisable(true);
         Image image = new Image(getClass().getResourceAsStream("play_arrow_black_48x48.png"));
         playPauseImage.setImage(image);
-
-//        //Setup Slider
-//        slider = new JFXSlider(10, 1000, 500);
-//        slider.setPrefWidth(150);
-//        slider.setPrefHeight(80);
-//        slider.setSnapToTicks(true);
-//        slider.setMinorTickCount(100);
-//        slider.setIndicatorPosition(JFXSlider.IndicatorPosition.RIGHT);
-//        slider.setBlendMode(BlendMode.MULTIPLY);
-//        slider.setCursor(javafx.scene.Cursor.CLOSED_HAND);
-//        nodeList.addAnimatedNode(slider);
-//        nodeList.setSpacing(50D);
-//        nodeList.setRotate(270D);
-//        slider.toFront();
-//        nodeList.toFront();
-//        slider.valueProperty().addListener(this);
 
 //        //Set TextFlow pane properties
 //        textFlow.setPrefSize(hiddenRoot.getPrefWidth(), hiddenRoot.getPrefHeight() - 2);
@@ -327,7 +305,7 @@ public class Controller implements Initializable {
                         List<Vertex> path = algo.getShortestPathTo(circle.vertex);
                         for (Vertex n : path) {
                             FillTransition ft1 = new FillTransition(Duration.millis(300), n.circle);
-                            ft1.setToValue(javafx.scene.paint.Color.BLUE);
+                            ft1.setToValue(Color.YELLOW);
                             ft1.play();
                         }
                     }
@@ -590,7 +568,6 @@ public class Controller implements Initializable {
             n.vertex.visited = false;
             n.vertex.previous = null;
             n.vertex.minDistance = Double.POSITIVE_INFINITY;
-            n.vertex.DAGColor = 0;
 
             FillTransition ft1 = new FillTransition(Duration.millis(300), n);
             ft1.setToValue(Color.BLACK);
@@ -721,29 +698,29 @@ public class Controller implements Initializable {
         }
 
         public void BFS(Vertex source) {
-            changeVertexColor(source, Color.FORESTGREEN);
+            changeVertexColor(source, Color.BLUE);
             source.minDistance = 0;
             source.visited = true;
             list.push(source);
             while (!list.isEmpty()) {
                 Vertex u = list.removeLast();
-                changeVertexColor(u,Color.CHOCOLATE);
+                changeVertexColor(u,Color.DARKVIOLET);
                 System.out.println(u.name);
                 for (Edge e: u.adjacents) {
                     if (e != null) {
                         Vertex v = e.target;
                         if (!v.visited) {
-                            v.minDistance = u.minDistance + 1;
+//                            v.minDistance = u.minDistance + 1;
                             v.visited = true;
                             list.push(v);
                             v.previous = u;
 
-                            changeEdgeColor(e,Color.FORESTGREEN);
-                            VertexVisitingFinish(v,Color.FORESTGREEN);
+                            changeEdgeColor(e,Color.BLUE);
+                            VertexVisitingFinish(v,Color.BLUE);
                         }
                     }
                 }
-                changeVertexColor(u,Color.BLUEVIOLET);
+                changeVertexColor(u,Color.GREEN);
             }
 
         }
@@ -757,7 +734,7 @@ public class Controller implements Initializable {
 
         public void DFSRecursion(Vertex source, int level) {
             //<editor-fold defaultstate="collapsed" desc="Animation Control">
-            changeVertexColor(source,Color.FORESTGREEN);
+            changeVertexColor(source,Color.BLUE);
 //
 //        String str = "";
 //        for (int i = 0; i < level; i++) {
@@ -776,15 +753,15 @@ public class Controller implements Initializable {
                 if (e != null) {
                     Vertex v = e.target;
                     if (!v.visited) {
-                        v.minDistance = source.minDistance + 1;
+//                        v.minDistance = source.minDistance + 1;
                         v.visited = true;
                         v.previous = source;
-                        v.circle.distance.setText("Dist. : " + v.minDistance);
-                        changeEdgeColor(e,Color.FORESTGREEN);
+//                        v.circle.distance.setText("Dist. : " + v.minDistance);
+                        changeEdgeColor(e,Color.BLUE);
                         DFSRecursion(v, level + 1);
 
-                        VertexVisitingFinish(v,Color.BLUEVIOLET);
-                        changeEdgeColor(e,Color.BLUEVIOLET);
+                        VertexVisitingFinish(v,Color.GREEN);
+                        changeEdgeColor(e,Color.GREEN);
                     }
                 }
             }
@@ -819,10 +796,10 @@ public class Controller implements Initializable {
             source.minDistance = 0;
             list.push(source);
             while (!list.isEmpty()) {
-                Vertex u = list.removeFirst();
+                Vertex u = list.removeLast();
                 System.out.println(u.name);
                 //<editor-fold defaultstate="collapsed" desc="Animation Control">
-                changeVertexColor(u, Color.CHOCOLATE);
+                changeVertexColor(u, Color.DARKVIOLET);
 //                String str = "";
 //                str = str.concat("Popped : Node(" + u.name + "), Current Distance: " + u.minDistance + "\n");
 //                final String str2 = str;
@@ -846,7 +823,7 @@ public class Controller implements Initializable {
                             //<editor-fold defaultstate="collapsed" desc="Node visiting animation">
                             changeEdgeColor(e,Color.FORESTGREEN);
                             //</editor-fold>
-                            VertexVisitingFinish(v,Color.FORESTGREEN);
+                            VertexVisitingFinish(v,Color.BLUE);
 
 //                            str = "\t";
 //                            str = str.concat("Pushing : Node(" + v.name + "), (" + u.name + "--" + v.name + ") Distance : " + v.minDistance + "\n");
@@ -861,7 +838,7 @@ public class Controller implements Initializable {
                         }
                     }
                 }
-                changeVertexColor(u,Color.BLUEVIOLET);
+                changeVertexColor(u,Color.GREEN);
             }
         }
 
@@ -899,11 +876,11 @@ public class Controller implements Initializable {
         public void changeEdgeColor( Edge e, Color color) {
             if (undirected) {
                 StrokeTransition ftEdge = new StrokeTransition(Duration.millis(time), e.line);
-                ftEdge.setToValue(Color.FORESTGREEN);
+                ftEdge.setToValue(color);
                 animations.getChildren().add(ftEdge);
             } else if (directed) {
                 FillTransition ftEdge = new FillTransition(Duration.millis(time), e.line);
-                ftEdge.setToValue(Color.FORESTGREEN);
+                ftEdge.setToValue(color);
                 animations.getChildren().add(ftEdge);
             }
 

@@ -15,19 +15,14 @@ import java.util.List;
 public class VertexCircle extends Circle {
     public Vertex vertex;
     public Point point;
-    public StackPane circlePane;
     public javafx.scene.control.Label distance = new javafx.scene.control.Label("Dist. : INFINITY");
-    public javafx.scene.control.Label visitTime = new javafx.scene.control.Label("Visit : 0");
-    public javafx.scene.control.Label lowTime = new javafx.scene.control.Label("Low : 0");
+//    public Label visitTime = new javafx.scene.control.Label("Visit : 0");
+//    public Label lowTime = new javafx.scene.control.Label("Low : 0");
     public javafx.scene.control.Label id;
     public boolean isSelected = false;
 
     public VertexCircle(double x, double y, double rad, String name, Group canvasGroup, List<VertexCircle> circles) {
         super(x, y, rad);
-//        circlePane = new StackPane();
-//        circlePane.setLayoutX(x);
-//        circlePane.setLayoutY(y);
-//        this.setRadius(rad);
         vertex = new Vertex(name, this);
         point = new Point((int) x, (int) y);
         id = new Label(name);
@@ -36,7 +31,6 @@ public class VertexCircle extends Circle {
         id.setLayoutX(x-5);
         id.setLayoutY(y-13);
         this.setOpacity(0.5);
-        this.setBlendMode(BlendMode.MULTIPLY);
         this.setId("vertex");
         this.setCursor(Cursor.DEFAULT);
         circles.add(this);

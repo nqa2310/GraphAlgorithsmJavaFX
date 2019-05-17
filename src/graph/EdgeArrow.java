@@ -10,7 +10,6 @@ public class EdgeArrow extends Path {
         private double startX, startY, endX, endY;
         public EdgeArrow(double startX, double startY, double endX, double endY, double arrowHeadSize){
             super();
-
             this.startX = startX;
             this.startY = startY;
             this.endX = endX;
