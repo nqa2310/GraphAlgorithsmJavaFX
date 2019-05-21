@@ -26,6 +26,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Shape;
 import javafx.util.Duration;
+import util.Find;
 
 import java.net.URL;
 import java.util.*;
@@ -165,9 +166,8 @@ public class Controller implements Initializable {
             if (!ev.getSource().equals(canvasGroup)) {
                 if (ev.getEventType() == MouseEvent.MOUSE_RELEASED && ev.getButton() == MouseButton.PRIMARY) {
                     nVertex++;
-                    VertexCircle circle = new VertexCircle(ev.getX(), ev.getY(), 1.3, String.valueOf(nVertex),canvasGroup,circles);
-//                    circle.circlePane.getChildren().add(circle);
-//                    circle.circlePane.getChildren().add(circle.id);
+                    VertexCircle circle = new VertexCircle(ev.getX(), ev.getY(), 20, String.valueOf(nVertex),canvasGroup,circles);
+                    circle.setFill(Color.GREY);
                     canvasGroup.getChildren().add(circle);
 
                     circle.setOnMousePressed(mouseHandler);
@@ -176,11 +176,11 @@ public class Controller implements Initializable {
                     circle.setOnMouseExited(mouseHandler);
                     circle.setOnMouseEntered(mouseHandler);
 
-                    ScaleTransition tr = new ScaleTransition(Duration.millis(100), circle);
-                    tr.setByX(15f);
-                    tr.setByY(15f);
-                    tr.setInterpolator(Interpolator.EASE_OUT);
-                    tr.play();
+//                    ScaleTransition tr = new ScaleTransition(Duration.millis(100), circle);
+//                    tr.setByX(15f);
+//                    tr.setByY(15f);
+//                    tr.setInterpolator(Interpolator.EASE_OUT);
+//                    tr.play();
 
                 }
             }
@@ -202,15 +202,21 @@ public class Controller implements Initializable {
                         if (addEdge && !edgeExists(selectedVertex, circle)) {
                             weight = new Label();
                             System.out.println("Adding Edge");
+                            Find F1 = new Find();
+                            F1.findLine(selectedVertex.point.x,selectedVertex.point.y,circle.point.x,circle.point.y);
+                            F1.findCoordinates(selectedVertex.point.x,selectedVertex.point.y,circle.point.x,circle.point.y,20);
+                            Find F2 = new Find();
+                            F2.findLine(circle.point.x,circle.point.y,selectedVertex.point.x,selectedVertex.point.y);
+                            F2.findCoordinates(circle.point.x,circle.point.y,selectedVertex.point.x,selectedVertex.point.y,20);
                             //Adds the edge between two selected nodes
                             if (undirected) {
-                                edgeLine = new Line(selectedVertex.point.x, selectedVertex.point.y, circle.point.x, circle.point.y);
+                                edgeLine = new Line(F1.X, F1.Y, F2.X, F2.Y);
                                 edgeLine.setStrokeWidth(2);
                                 canvasGroup.getChildren().add(edgeLine);
                                 edgeLine.setId("line");
                                 edgeLine.setCursor(Cursor.DEFAULT);
                             } else if (directed) {
-                                arrow = new EdgeArrow(selectedVertex.point.x, selectedVertex.point.y, circle.point.x, circle.point.y);
+                                arrow = new EdgeArrow(F1.X, F1.Y, F2.X, F2.Y);
                                 canvasGroup.getChildren().add(arrow);
                                 arrow.setId("arrow");
                                 arrow.setCursor(Cursor.DEFAULT);
@@ -255,14 +261,14 @@ public class Controller implements Initializable {
                         }
                         if (addVertex || addEdge) {
                             selectedVertex.isSelected = false;
-                            FillTransition ft1 = new FillTransition(Duration.millis(300), selectedVertex, Color.GREEN, javafx.scene.paint.Color.BLACK);
+                            FillTransition ft1 = new FillTransition(Duration.millis(300), selectedVertex, Color.GREEN, Color.GRAY);
                             ft1.play();
                         }
                         selectedVertex = null;
                         return;
                     }
                     if(!calculate) {
-                        FillTransition ft = new FillTransition(Duration.millis(300), circle, javafx.scene.paint.Color.BLACK, Color.GREEN);
+                        FillTransition ft = new FillTransition(Duration.millis(300), circle, Color.GRAY, Color.GREEN);
                         ft.play();
                         circle.isSelected = true;
                         selectedVertex = circle;
@@ -311,7 +317,7 @@ public class Controller implements Initializable {
                     }
                 } else {
                     circle.isSelected = false;
-                    FillTransition ft1 = new FillTransition(Duration.millis(300), circle, Color.GREEN, Color.BLACK);
+                    FillTransition ft1 = new FillTransition(Duration.millis(300), circle, Color.GREEN, Color.GRAY);
                     ft1.play();
                     selectedVertex = null;
                 }

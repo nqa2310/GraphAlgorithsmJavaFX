@@ -27,4 +27,5 @@ public class Edge {
         this.line = line;
         this.weightLabel = weiLabel;
     }
+
 }
